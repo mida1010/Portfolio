@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #0b1220;
-      --card: rgba(255,255,255,0.06);f
+      --card: rgba(255,255,255,0.06);
       --card2: rgba(255,255,255,0.08);
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.65);
@@ -26,28 +26,9 @@
                   radial-gradient(900px 700px at 90% 30%, rgba(180,120,255,0.14), transparent 60%),
                   var(--bg);
     }
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 22px 18px 48px;
-    }
-    header {
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: 0.2px;
-    }
-    .sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 6px;
-    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 22px 18px 48px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 16px; }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0.2px; }
     .pill {
       padding: 8px 12px;
       border: 1px solid var(--stroke);
@@ -56,11 +37,7 @@
       font-size: 12px;
       color: var(--muted);
     }
-    .grid {
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-    }
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
     .card {
       background: linear-gradient(180deg, var(--card2), var(--card));
       border: 1px solid var(--stroke);
@@ -69,44 +46,29 @@
       padding: 14px 14px 12px;
       min-height: 120px;
     }
-    .kpi {
-      display:flex;
-      flex-direction:column;
-      gap: 6px;
-    }
-    .kpi .label {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .kpi .value {
-      font-size: 22px;
-      font-family: var(--mono);
-    }
-    .kpi .hint {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .kpi { display:flex; flex-direction:column; gap: 6px; }
+    .kpi .label { font-size: 12px; color: var(--muted); }
+    .kpi .value { font-size: 22px; font-family: var(--mono); }
+    .kpi .hint { font-size: 12px; color: var(--muted); }
     .span-3 { grid-column: span 3; }
     .span-6 { grid-column: span 6; }
     .span-12 { grid-column: span 12; }
 
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.86);
-      font-weight: 650;
-      letter-spacing: 0.2px;
-    }
-    .chartbox {
-      position: relative;
-      height: 320px;
+    .card h2 { margin: 0 0 10px; font-size: 14px; color: rgba(255,255,255,0.86); font-weight: 650; letter-spacing: 0.2px; }
+    .chartbox { position: relative; height: 320px; }
+
+    .table-wrap {
+      max-height: 420px;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
     }
     .table {
       width: 100%;
       border-collapse: collapse;
       overflow: hidden;
       border-radius: 14px;
-      border: 1px solid var(--stroke);
+      border: 0;
     }
     .table thead th {
       text-align: left;
@@ -118,15 +80,15 @@
       position: sticky;
       top: 0;
       z-index: 1;
+      white-space: nowrap;
     }
     .table tbody td {
       padding: 10px 10px;
       border-bottom: 1px solid rgba(255,255,255,0.06);
       font-size: 13px;
+      white-space: nowrap;
     }
-    .table tbody tr:hover {
-      background: rgba(255,255,255,0.04);
-    }
+    .table tbody tr:hover { background: rgba(255,255,255,0.04); }
     .right { text-align:right; }
     .tag {
       font-size: 12px;
@@ -140,28 +102,17 @@
     .pos { color: rgba(140, 255, 190, 0.95); font-family: var(--mono); }
     .neg { color: rgba(255, 140, 140, 0.95); font-family: var(--mono); }
     .mono { font-family: var(--mono); }
-    .footer {
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 12px;
-    }
+    .footer { margin-top: 14px; color: var(--muted); font-size: 12px; }
+
+    .table thead th.sortable { cursor: pointer; user-select: none; }
+    .table thead th.sortable:hover { background: rgba(255,255,255,0.06); }
+    .sort-ind { opacity: 0.7; margin-left: 6px; font-size: 11px; }
+
     @media (max-width: 980px) {
       .span-3, .span-6 { grid-column: span 12; }
       .chartbox { height: 280px; }
       header { align-items:flex-start; flex-direction: column; }
     }
-  
-    .table-wrap { 
-      max-height: 420px; 
-      overflow: auto; 
-      border-radius: 14px; 
-      border: 1px solid var(--stroke);
-    }
-    .table { border: 0; }
-    .table thead th.sortable { cursor: pointer; user-select: none; }
-    .table thead th.sortable:hover { background: rgba(255,255,255,0.06); }
-    .sort-ind { opacity: 0.7; margin-left: 6px; font-size: 11px; }
-
   </style>
 </head>
 <body>
@@ -170,17 +121,16 @@
       <div>
         <h1>Portfolio Dashboard</h1>
       </div>
+
       <div style="display:flex; gap:10px; align-items:center;">
         <div class="pill">Prezzi aggiornati al: 06/01/2026</div>
         <a
           class="pill"
-          href="https://docs.google.com/document/d/1sikh0ORwojUQrcuRe21prdnyXie6GrZPd_uWr_Pb9NM/edit?tab=t.0"
+          href="https://docs.google.com/document/d/1EL1-quM6D3o4uXkyMdLtwHnl-GzxODPYpGE0kpcWnI4/edit?tab=t.0"
           target="_blank"
           rel="noopener"
           style="text-decoration:none;"
-        >
-          Le mie analisi
-        </a>
+        >Le mie analisi</a>
       </div>
     </header>
 
@@ -223,12 +173,12 @@
         <div class="chartbox"><canvas id="chartScatter"></canvas></div>
       </div>
 
-      
       <div class="card span-6">
         <h2>Contributo al rendimento (punti %)</h2>
         <div class="chartbox"><canvas id="chartContrib"></canvas></div>
       </div>
-<div class="card span-12">
+
+      <div class="card span-12">
         <h2>Tabella posizioni</h2>
         <div class="table-wrap">
           <table class="table" id="tbl">
@@ -247,6 +197,7 @@
             <tbody></tbody>
           </table>
         </div>
+        <div class="footer">P&amp;L% = (Prezzo attuale − Prezzo acquisto) / Prezzo acquisto. La “Data acquisto” viene letta dal tuo CSV.</div>
       </div>
     </section>
   </div>
@@ -254,10 +205,197 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <script>
-    const DATA = {"labels": ["EMAAR.AE", "1810.HK", "WLFI33251-USD", "AHLA.DE", "6RJ0.MU", "WNUC.DE", "MFEA.MI", "SIDU", "TL0.DE", "GC=F", "ABEC.DE"], "weights": [36.36, 6.68, 10.57, 9.13, 7.89, 6.45, 6.32, 2.88, 3.02, 1.21, 9.49], "pnl": [3.76, -32.06, 25.51, -2.74, 23.37, 2.31, 0.13, 74.81, -0.1, 11.65, -0.19], "assetLabels": ["Stock", "Crypto", "ETF", "Futures"], "assetWeights": [81.77, 10.57, 6.45, 1.21], "table": [{"Ticker": "EMAAR.AE", "Name": "Emaar Properties PJSC", "Asset": "Stock", "Weight": 36.36, "Entry": 13.68527, "Current": 14.5, "PnL": 3.76, "DataAcquisto": "28/10/2025"}, {"Ticker": "WLFI33251-USD", "Name": "World Liberty Financial USD (Crypto)", "Asset": "Crypto", "Weight": 10.57, "Entry": 0.136853, "Current": 0.17082, "PnL": 25.51, "DataAcquisto": "28/10/2025"}, {"Ticker": "ABEC.DE", "Name": "Alphabet Inc. (Google)", "Asset": "Stock", "Weight": 9.49, "Entry": 271.88, "Current": 268.05, "PnL": -0.19, "DataAcquisto": "05/01/2026"}, {"Ticker": "AHLA.DE", "Name": "Alibaba Group Holding Limited", "Asset": "Stock", "Weight": 9.13, "Entry": 134.49, "Current": 131.4, "PnL": -2.74, "DataAcquisto": "10/12/2025"}, {"Ticker": "6RJ0.MU", "Name": "Rocket Lab USA, Inc.", "Asset": "Stock", "Weight": 7.89, "Entry": 52.279813, "Current": 66.5, "PnL": 23.37, "DataAcquisto": "16/12/2025"}, {"Ticker": "1810.HK", "Name": "Xiaomi Corporation", "Asset": "Stock", "Weight": 6.68, "Entry": 57.9, "Current": 38.760, "PnL": -32.06, "DataAcquisto": "02/12/2025"}, {"Ticker": "WNUC.DE", "Name": "WisdomTree Uranium & Nuclear Energy UCITS ETF (USD Acc)", "Asset": "ETF", "Weight": 6.45, "Entry": 46.902065, "Current": 48.82, "PnL": 2.31, "DataAcquisto": "12/12/2025"}, {"Ticker": "MFEA.MI", "Name": "MFE–MediaForEurope N.V.", "Asset": "Stock", "Weight": 6.32, "Entry": 3.04, "Current": 3.0, "PnL": 0.13, "DataAcquisto": "01/12/2025"}, {"Ticker": "TL0.DE", "Name": "Tesla, Inc.", "Asset": "Stock", "Weight": 3.02, "Entry": 388.78, "Current": 369.45, "PnL": -0.1, "DataAcquisto": "10/12/2025"}, {"Ticker": "SIDU", "Name": "Sidus Space, Inc.", "Asset": "Stock", "Weight": 2.88, "Entry": 2.58, "Current": 4.765, "PnL": 74.81, "DataAcquisto": "31/12/2025"}, {"Ticker": "GC=F", "Name": "Gold Futures (COMEX)", "Asset": "Futures", "Weight": 1.21, "Entry": 3990.0, "Current": 4492.7, "PnL": 11.65, "DataAcquisto": "10/12/2025"}], "summary": {"totalReturn": 5.95, "nPositions": 11, "bestTicker": "SIDU", "bestPnL": 74.81, "worstTicker": "1810.HK", "worstPnL": -32.06}, "purchaseDates": ["28/10/2025", "02/12/2025", "28/10/2025", "10/12/2025", "16/12/2025", "12/12/2025", "01/12/2025", "31/12/2025", "10/12/2025", "10/12/2025", "05/01/2026"]};
+    // DATI AGGIORNATI (prezzi + P&L% da Yahoo Finance, screenshot fornito)
+    const DATA = {
+      "labels": [
+        "ABEC.DE",
+        "SIDU",
+        "6RJ0.MU",
+        "WNUC.DE",
+        "AHLA.DE",
+        "TLO.DE",
+        "GC=F",
+        "1810.HK",
+        "MFEA.MI",
+        "WLFI33251-USD",
+        "EMAAR.AE"
+      ],
+      "weights": [
+        9.49,
+        2.88,
+        7.89,
+        6.45,
+        9.11,
+        3.11,
+        1.11,
+        6.68,
+        6.22,
+        11.11,
+        36.95
+      ],
+      "pnl": [
+        -1.41,
+        88.2572,
+        27.2,
+        4.08,
+        -2.3,
+        -4.97,
+        11.99,
+        -33.542,
+        -1.3158,
+        24.247741,
+        5.27
+      ],
+      "assetLabels": [
+        "Stock",
+        "Crypto",
+        "ETF",
+        "Futures"
+      ],
+      "assetWeights": [
+        82.44,
+        11.11,
+        6.45,
+        1.11
+      ],
+      "table": [
+        {
+          "Ticker": "EMAAR.AE",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 36.95,
+          "Entry": 13.69,
+          "Current": 14.5,
+          "PnL": 5.27,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "WLFI33251-USD",
+          "Name": "",
+          "Asset": "Crypto",
+          "Weight": 11.11,
+          "Entry": 0.136853,
+          "Current": 0.17073,
+          "PnL": 24.247741,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "ABEC.DE",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 9.49,
+          "Entry": 271.88,
+          "Current": 268.05,
+          "PnL": -1.41,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "AHLA.DE",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 9.11,
+          "Entry": 134.49,
+          "Current": 131.4,
+          "PnL": -2.3,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "6RJ0.MU",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 7.89,
+          "Entry": 52.28,
+          "Current": 66.5,
+          "PnL": 27.2,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "1810.HK",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 6.68,
+          "Entry": 57.9,
+          "Current": 38.76,
+          "PnL": -33.542,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "MFEA.MI",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 6.22,
+          "Entry": 3.04,
+          "Current": 3,
+          "PnL": -1.3158,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "WNUC.DE",
+          "Name": "",
+          "Asset": "ETF",
+          "Weight": 6.45,
+          "Entry": 46.9,
+          "Current": 48.81,
+          "PnL": 4.08,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "TLO.DE",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 3.11,
+          "Entry": 388.78,
+          "Current": 369.45,
+          "PnL": -4.97,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "SIDU",
+          "Name": "",
+          "Asset": "Stock",
+          "Weight": 2.88,
+          "Entry": 2.58,
+          "Current": 4.835,
+          "PnL": 88.2572,
+          "DataAcquisto": "05/01/2026"
+        },
+        {
+          "Ticker": "GC=F",
+          "Name": "",
+          "Asset": "Futures",
+          "Weight": 1.11,
+          "Entry": 3990,
+          "Current": 4493.4,
+          "PnL": 11.99,
+          "DataAcquisto": "05/01/2026"
+        }
+      ],
+      "summary": {
+        "totalReturn": 6.90,
+        "nPositions": 11,
+        "bestTicker": "SIDU",
+        "bestPnL": 88.2572,
+        "worstTicker": "1810.HK",
+        "worstPnL": -33.542
+      },
+      "purchaseDates": [
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026",
+        "05/01/2026"
+      ]
+    };
 
     const fmt = (x, d=2) => Number(x).toLocaleString('it-IT', {minimumFractionDigits:d, maximumFractionDigits:d});
 
+    // KPI
     const totalEl = document.getElementById('kpiTotal');
     totalEl.className = 'value ' + (DATA.summary.totalReturn >= 0 ? 'pos' : 'neg');
     totalEl.textContent = fmt(DATA.summary.totalReturn) + '%';
@@ -265,17 +403,15 @@
     document.getElementById('kpiN').textContent = DATA.summary.nPositions;
 
     document.getElementById('kpiBest').textContent = DATA.summary.bestTicker;
-    document.getElementById('kpiBestHint').innerHTML = 'P&L: <span class="pos">' + fmt(DATA.summary.bestPnL) + '%</span>';
+    document.getElementById('kpiBestHint').innerHTML = 'P&amp;L: <span class="pos">' + fmt(DATA.summary.bestPnL) + '%</span>';
 
     document.getElementById('kpiWorst').textContent = DATA.summary.worstTicker;
-    document.getElementById('kpiWorstHint').innerHTML = 'P&L: <span class="neg">' + fmt(DATA.summary.worstPnL) + '%</span>';
+    document.getElementById('kpiWorstHint').innerHTML = 'P&amp;L: <span class="neg">' + fmt(DATA.summary.worstPnL) + '%</span>';
 
-    
     // Tabella (ordinabile)
     const tableData = (DATA.table || []).slice();
 
     const parseITDate = (s) => {
-      // atteso: DD/MM/YYYY
       if (!s) return null;
       const parts = String(s).split('/');
       if (parts.length !== 3) return null;
@@ -295,7 +431,7 @@
     const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
 
     let sortKey = 'Weight';
-    let sortDir = 'desc'; // 'asc' | 'desc'
+    let sortDir = 'desc';
 
     const setIndicators = () => {
       headers.forEach(th => {
@@ -348,7 +484,9 @@
     });
 
     renderTable();
-const common = {
+
+    // Grafici
+    const common = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -358,38 +496,25 @@ const common = {
             boxWidth: 10,
             font: { size: 11 }
           }
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const v = ctx.parsed;
-              if (typeof v === 'number') return ' ' + ctx.label + ': ' + fmt(v) + '%';
-              return ' ' + ctx.label;
-            }
-          }
         }
       },
       scales: {
-        x: {
-          ticks: { color: 'rgba(255,255,255,0.7)' },
-          grid: { color: 'rgba(255,255,255,0.08)' }
-        },
-        y: {
-          ticks: { color: 'rgba(255,255,255,0.7)' },
-          grid: { color: 'rgba(255,255,255,0.08)' }
-        }
+        x: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+        y: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.08)' } }
       }
     };
 
-    // Allocation donut
+    const palette = ["#4E79A7","#F28E2B","#E15759","#76B7B2","#59A14F","#EDC948","#B07AA1","#FF9DA7","#9C755F","#BAB0AC","#1F77B4","#2CA02C"];
+
+    // Donut allocazione
     new Chart(document.getElementById('chartAlloc'), {
       type: 'doughnut',
       data: {
         labels: DATA.labels,
         datasets: [{
           data: DATA.weights,
-          backgroundColor: ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC", "#1F77B4", "#2CA02C"],
-          hoverBackgroundColor: ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC", "#1F77B4", "#2CA02C"],
+          backgroundColor: palette,
+          hoverBackgroundColor: palette,
           borderColor: 'rgba(255,255,255,0.08)',
           borderWidth: 1,
           hoverOffset: 6
@@ -400,16 +525,12 @@ const common = {
         cutout: '58%',
         plugins: {
           ...common.plugins,
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ' ' + ctx.label + ': ' + fmt(ctx.parsed) + '%'
-            }
-          }
+          tooltip: { callbacks: { label: (ctx) => ' ' + ctx.label + ': ' + fmt(ctx.parsed) + '%' } }
         }
       }
     });
 
-    // Asset allocation bar
+    // Bar allocazione per asset
     new Chart(document.getElementById('chartAsset'), {
       type: 'bar',
       data: {
@@ -425,38 +546,20 @@ const common = {
         plugins: {
           ...common.plugins,
           legend: { display:false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ' ' + fmt(ctx.parsed.y) + '%'
-            }
-          }
+          tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.parsed.y) + '%' } }
         },
         scales: {
-          x: {
-            ticks: { color: 'rgba(255,255,255,0.7)' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          },
-          y: {
-            ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          }
+          x: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+          y: { ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' }, grid: { color: 'rgba(255,255,255,0.08)' } }
         }
       }
     });
 
-    // Scatter Weight vs P&L
+    // Scatter peso vs P&L
     const scatterPoints = DATA.labels.map((t, i) => ({ x: DATA.weights[i], y: DATA.pnl[i], label: t }));
-
     new Chart(document.getElementById('chartScatter'), {
       type: 'scatter',
-      data: {
-        datasets: [{
-          label: 'Posizioni',
-          data: scatterPoints,
-          pointRadius: 5,
-          pointHoverRadius: 7
-        }]
-      },
+      data: { datasets: [{ label: 'Posizioni', data: scatterPoints, pointRadius: 5, pointHoverRadius: 7 }] },
       options: {
         ...common,
         plugins: {
@@ -471,22 +574,13 @@ const common = {
           }
         },
         scales: {
-          x: {
-            title: { display: true, text: 'Peso %', color: 'rgba(255,255,255,0.78)' },
-            ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          },
-          y: {
-            title: { display: true, text: 'P&L %', color: 'rgba(255,255,255,0.78)' },
-            ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          }
+          x: { title: { display: true, text: 'Peso %', color: 'rgba(255,255,255,0.78)' }, ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+          y: { title: { display: true, text: 'P&L %', color: 'rgba(255,255,255,0.78)' }, ticks: { color: 'rgba(255,255,255,0.7)', callback: (v)=> v + '%' }, grid: { color: 'rgba(255,255,255,0.08)' } }
         }
       }
     });
-  
-    
-    // --- Contributo al rendimento (punti %): Peso% × P&L% / 100
+
+    // Contributo al rendimento (punti %): Peso% × P&L% / 100
     const contrib = DATA.labels.map((t, i) => ({
       label: t,
       value: (Number(DATA.weights[i] || 0) * Number(DATA.pnl[i] || 0)) / 100
@@ -508,25 +602,15 @@ const common = {
         plugins: {
           ...common.plugins,
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => ' ' + fmt(ctx.parsed.y, 2) + ' punti %'
-            }
-          }
+          tooltip: { callbacks: { label: (ctx) => ' ' + fmt(ctx.parsed.y, 2) + ' punti %' } }
         },
         scales: {
-          x: {
-            ticks: { color: 'rgba(255,255,255,0.7)' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          },
-          y: {
-            title: { display: true, text: 'Punti %', color: 'rgba(255,255,255,0.78)' },
-            ticks: { color: 'rgba(255,255,255,0.7)' },
-            grid: { color: 'rgba(255,255,255,0.08)' }
-          }
+          x: { ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+          y: { title: { display: true, text: 'Punti %', color: 'rgba(255,255,255,0.78)' }, ticks: { color: 'rgba(255,255,255,0.7)' }, grid: { color: 'rgba(255,255,255,0.08)' } }
         }
       }
     });
-</script>
+
+  </script>
 </body>
 </html>
