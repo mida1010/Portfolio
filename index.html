@@ -12,7 +12,7 @@
       --radius:18px;
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      --pos: #8cffbe; --neg: #ff8c8c; --realized: #7dd3fc; --lev: #e0aaff;
+      --pos: #8cffbe; --neg: #ff8c8c; --realized: #7dd3fc; --lev: #d0aaff;
     }
     *{box-sizing:border-box}
     body{
@@ -61,12 +61,18 @@
 
     .right{text-align:right}
     .tag{
-      font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--stroke);
-      background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block
+      font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid var(--stroke);
+      background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block; margin-right:4px;
     }
-    .lev-tag{
-      color: var(--lev); border-color: rgba(224, 170, 255, 0.3); background: rgba(224, 170, 255, 0.05); margin-left:4px;
+    
+    /* Stile speciale per evidenziare la LEVA */
+    .lev-badge {
+      font-size:10px; color: #0b1220; background:var(--lev); padding:2px 5px; border-radius:3px; font-weight:bold; vertical-align:middle; display:inline-block; margin-top:2px;
     }
+    .exposure-val {
+      display:block; font-size:11px; color:var(--lev); margin-top:2px; opacity:0.9;
+    }
+
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
     .realized{color:var(--realized);font-family:var(--mono);font-weight:bold;}
@@ -129,17 +135,17 @@
 
   <section class="grid">
     <div class="card span-6">
-      <h2>Allocazione (Peso %)</h2>
+      <h2>Allocazione Equity (I Tuoi Soldi)</h2>
       <div class="chartbox"><canvas id="chartAlloc"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Allocazione per Asset</h2>
+      <h2>Esposizione Asset (Rischio Reale)</h2>
       <div class="chartbox"><canvas id="chartAsset"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Peso vs P&L (Posizioni Aperte)</h2>
+      <h2>Peso Equity vs P&L (Posizioni Aperte)</h2>
       <div class="chartbox"><canvas id="chartScatter"></canvas></div>
     </div>
 
@@ -158,7 +164,7 @@
               <th class="sortable" data-key="Name">Nome<span class="sort-ind"></span></th>
               <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
               <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Weight">Peso %<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="Weight">Peso Equity<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Entry">Entry<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Current">Attuale<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="PnL">P&L %<span class="sort-ind"></span></th>
@@ -167,7 +173,9 @@
           <tbody></tbody>
         </table>
       </div>
-      <div class="footer">Nota: Il P&L include l'effetto della leva finanziaria dove indicata.</div>
+      <div class="footer">
+        Nota: "Peso Equity" è il capitale investito. "Effettivo" (viola) è l'esposizione di mercato con la leva.
+      </div>
     </div>
 
     <div class="card span-12">
@@ -202,7 +210,6 @@
 const DATA = {
   asOf: "23/01/2026",
   
-  // LEVA: Se non specificata, è 1.
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,    DataAcquisto:"23/10/2025" },
     { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.172, DataAcquisto:"22/10/2025" },
@@ -215,14 +222,15 @@ const DATA = {
     { Ticker:"TL0.DE",        Name:"Tesla", Asset:"Stock",  Weight:3.11,  Entry:388.78,    Current:373.2, DataAcquisto:"10/12/2025" },
     { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:3.385, DataAcquisto:"31/12/2025" },
     
-    // NUOVA OPERAZIONE BTC (Cash reinvestito -> 1.11% Peso Equity)
+    // BTC: Peso Equity = 1.37% (Il capitale reale che hai messo, derivato dal Gold + Profitti)
+    // Leva 3x significa che ti esponi per il 4.11%, ma il "Weight" contabile deve restare 1.37
     { 
       Ticker:"BTC-USD", 
       Name:"Bitcoin", 
       Asset:"Crypto", 
-      Weight:1.11,      // Capitale derivato dal Gold
+      Weight:1.37,      // 1.11 (Gold base) * 1.24 (Profitto) ~= 1.37%
       Entry:89554, 
-      Current:89554,    // AGGIORNARE QUI il prezzo attuale
+      Current:89554,    // AGGIORNARE QUI
       Leverage: 3,      // LEVA 3X
       DataAcquisto:"23/01/2026" 
     },
@@ -255,7 +263,7 @@ const fmtSmart = (x) => {
   return n.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-// Modificato per gestire LEVA
+// Calcolo PnL con Leva
 const computePnL = (entry, current, leverage = 1) => {
   const e = Number(entry), c = Number(current);
   if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
@@ -282,12 +290,13 @@ const getComparable = (row, key) => {
    3) LOGICA
    ========================= */
 function recomputeRowsPnL() {
-  // PnL righe aperte (passiamo la leva se esiste, altrimenti 1)
   DATA.table.forEach(r => { 
     r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1); 
+    // Calcoliamo l'Esposizione Effettiva (Effective Weight) per i grafici del rischio
+    // Ma non tocchiamo r.Weight che serve per l'Equity.
+    r.EffWeight = (r.Weight || 0) * (r.Leverage || 1);
   });
   
-  // PnL righe chiuse (normalmente senza leva dinamica post-chiusura, o fissa a 1 se non specificata)
   DATA.closed.forEach(r => { 
     r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1); 
   });
@@ -295,15 +304,14 @@ function recomputeRowsPnL() {
 
 function buildDerived() {
   const labels = DATA.table.map(r => r.Ticker);
-  const weights = DATA.table.map(r => Number(r.Weight) || 0);
+  const weights = DATA.table.map(r => Number(r.Weight) || 0); // Pesi Equity
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  // 1. Rendimento Aperte
+  // Rendimento Aperte
   const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0) * (Number(r.PnL)||0), 0) / 100;
 
-  // 2. Rendimento Chiuse
+  // Rendimento Chiuse
   const realizedReturn = DATA.closed.reduce((acc, r) => {
-    // Ricalcoliamo PnL trade chiusa (semplice)
     const tradePnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
     const contrib = (Number(r.Weight)||0) * tradePnL / 100;
     return acc + contrib;
@@ -311,21 +319,21 @@ function buildDerived() {
 
   const totalReturn = unrealizedReturn + realizedReturn;
 
-  // Best/Worst (Open)
   let best = null, worst = null;
   DATA.table.forEach(r => {
     if (!best || Number(r.PnL) > Number(best.PnL)) best = r;
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
-  // Asset allocation
-  const assetMap = new Map();
+  // Asset allocation - BARRE (Qui usiamo l'esposizione per vedere il rischio)
+  const assetMapExposure = new Map();
   DATA.table.forEach(r => {
     const a = r.Asset ?? '';
-    assetMap.set(a, (assetMap.get(a) || 0) + (Number(r.Weight) || 0));
+    // Qui sommiamo EffWeight (con leva)
+    assetMapExposure.set(a, (assetMapExposure.get(a) || 0) + (Number(r.EffWeight) || 0));
   });
-  const assetLabels = Array.from(assetMap.keys());
-  const assetWeights = assetLabels.map(a => assetMap.get(a));
+  const assetLabels = Array.from(assetMapExposure.keys());
+  const assetWeights = assetLabels.map(a => assetMapExposure.get(a));
 
   // Scatter
   const scatterPoints = labels.map((t, i) => ({ 
@@ -339,7 +347,7 @@ function buildDerived() {
   contrib.sort((a, b) => b.value - a.value);
 
   return {
-    labels, weights, pnls,
+    labels, weights, pnls, 
     totalReturn,
     realizedReturn,
     nPositions: DATA.table.length,
@@ -358,17 +366,11 @@ function buildDerived() {
    ========================= */
 function renderKPI(d) {
   document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf || '—'}`;
-
-  // Totale
   const totalEl = document.getElementById('kpiTotal');
   totalEl.className = 'value ' + (d.totalReturn >= 0 ? 'pos' : 'neg');
   totalEl.textContent = fmt(d.totalReturn) + '%';
-
-  // Realizzato
   const realEl = document.getElementById('kpiRealized');
   realEl.textContent = (d.realizedReturn >= 0 ? '+' : '') + fmt(d.realizedReturn) + '%'; 
-
-  // Best/Worst
   document.getElementById('kpiBest').textContent = d.bestTicker;
   document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(d.bestPnL)}%</span>`;
   document.getElementById('kpiWorst').textContent = d.worstTicker;
@@ -403,20 +405,27 @@ function renderTable() {
     const pnlVal = Number(r.PnL);
     const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
     
-    // Badge Leva
-    const levBadge = (r.Leverage && r.Leverage > 1) 
-      ? `<span class="tag lev-tag">${r.Leverage}x</span>` 
-      : '';
+    // Logica visualizzazione peso vs esposizione
+    let weightHTML = `<span class="mono">${fmt(r.Weight)}%</span>`;
+    let levBadge = '';
+    
+    if (r.Leverage && r.Leverage > 1) {
+      levBadge = `<span class="lev-badge">${r.Leverage}x</span>`;
+      weightHTML += `<span class="exposure-val">Eff: <b>${fmt(r.EffWeight)}%</b></span>`;
+    }
 
     tr.innerHTML =
       `<td class="mono">${r.Ticker ?? ''}</td>` +
       `<td>${r.Name ?? ''}</td>` +
-      `<td><span class="tag">${r.Asset ?? ''}</span>${levBadge}</td>` +
+      `<td><span class="tag">${r.Asset ?? ''}</span></td>` +
       `<td class="mono">${r.DataAcquisto ?? ''}</td>` +
-      `<td class="right mono">${fmt(r.Weight)}</td>` +
+      `<td class="right mono">${weightHTML}</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Current)}</td>` +
-      `<td class="right ${pnlClass}">${fmt(r.PnL)}%</td>`;
+      `<td class="right ${pnlClass}">
+         ${fmt(r.PnL)}%
+         ${levBadge ? '<br>'+levBadge : ''}
+       </td>`;
     tbody.appendChild(tr);
   });
   setIndicators();
@@ -430,7 +439,6 @@ function renderClosedTable() {
     tr.className = 'closed-row';
     const pnl = computePnL(r.Entry, r.Exit, r.Leverage||1);
     const contrib = (r.Weight * pnl) / 100;
-    
     tr.innerHTML = 
       `<td class="mono">${r.Ticker}</td>` +
       `<td>${r.Name}</td>` +
@@ -477,12 +485,13 @@ const palette = ["#4E79A7","#F28E2B","#E15759","#76B7B2","#59A14F","#EDC948","#B
 let chartAlloc, chartAsset, chartScatter, chartContrib;
 
 function initCharts(d) {
+  // Chart 1: Equity (Dove sono i tuoi soldi reali)
   chartAlloc = new Chart(document.getElementById('chartAlloc'), {
     type: 'doughnut',
     data: {
       labels: d.labels,
       datasets: [{
-        data: d.weights,
+        data: d.weights, // Usa Weights (Equity)
         backgroundColor: palette,
         borderColor: 'rgba(255,255,255,0.08)',
         borderWidth: 1
@@ -491,16 +500,17 @@ function initCharts(d) {
     options: {
       ...common,
       cutout: '58%',
-      plugins: { ...common.plugins, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed)}%` } } }
+      plugins: { ...common.plugins, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed)}% (Equity)` } } }
     }
   });
 
+  // Chart 2: Asset (Esposizione Reale - QUI si vede la leva, es: Crypto sarà più alto)
   chartAsset = new Chart(document.getElementById('chartAsset'), {
     type: 'bar',
-    data: { labels: d.assetLabels, datasets: [{ label:'Peso %', data: d.assetWeights, borderWidth: 0 }] },
+    data: { labels: d.assetLabels, datasets: [{ label:'Esposizione %', data: d.assetWeights, borderWidth: 0, backgroundColor: '#d0aaff' }] },
     options: {
       ...common,
-      plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` ${fmt(c.parsed.y)}%` } } },
+      plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` Esposizione: ${fmt(c.parsed.y)}%` } } },
       scales: {
         x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
         y: { ticks: { color:'rgba(255,255,255,0.7)', callback:(v)=> v+'%' }, grid:{ color:'rgba(255,255,255,0.08)' } }
@@ -525,7 +535,7 @@ function initCharts(d) {
         }
       },
       scales: {
-        x: { title: { display:true, text:'Peso %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
+        x: { title: { display:true, text:'Peso Equity %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
         y: { title: { display:true, text:'P&L %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
       }
     }
@@ -552,7 +562,7 @@ function updateCharts(d) {
   chartAlloc.data.labels = d.labels;
   chartAlloc.data.datasets[0].data = d.weights;
   chartAsset.data.labels = d.assetLabels;
-  chartAsset.data.datasets[0].data = d.assetWeights;
+  chartAsset.data.datasets[0].data = d.assetWeights; 
   chartScatter.data.datasets[0].data = d.scatterPoints;
   chartContrib.data.labels = d.contrib.map(x => x.label);
   chartContrib.data.datasets[0].data = d.contrib.map(x => x.value);
