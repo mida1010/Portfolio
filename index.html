@@ -12,6 +12,7 @@
       --radius:18px;
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      --pos: #8cffbe; --neg: #ff8c8c; --realized: #7dd3fc;
     }
     *{box-sizing:border-box}
     body{
@@ -37,10 +38,13 @@
     .kpi{display:flex;flex-direction:column;gap:6px}
     .kpi .label{font-size:12px;color:var(--muted)}
     .kpi .value{font-size:22px;font-family:var(--mono)}
-    .kpi .hint{font-size:12px;color:var(--muted)}
+    .kpi .hint{font-size:11px;color:var(--muted); line-height:1.4}
+    
     .span-3{grid-column:span 3}
+    .span-4{grid-column:span 4} /* Modificato per layout a 3 colonne sopra */
     .span-6{grid-column:span 6}
     .span-12{grid-column:span 12}
+    
     .card h2{margin:0 0 10px;font-size:14px;color:rgba(255,255,255,0.86);font-weight:650;letter-spacing:.2px}
     .chartbox{position:relative;height:320px}
     .table-wrap{max-height:420px;overflow:auto;border-radius:14px;border:1px solid var(--stroke)}
@@ -52,20 +56,28 @@
     }
     .table tbody td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;white-space:nowrap}
     .table tbody tr:hover{background:rgba(255,255,255,0.04)}
+    
+    /* Stili specifici tabella chiuse */
+    .closed-row { opacity: 0.7; }
+    .closed-row:hover { opacity: 1; }
+
     .right{text-align:right}
     .tag{
       font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--stroke);
       background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block
     }
-    .pos{color:rgba(140,255,190,0.95);font-family:var(--mono)}
-    .neg{color:rgba(255,140,140,0.95);font-family:var(--mono)}
+    .pos{color:var(--pos);font-family:var(--mono)}
+    .neg{color:var(--neg);font-family:var(--mono)}
+    .realized{color:var(--realized);font-family:var(--mono);font-weight:bold;}
     .mono{font-family:var(--mono)}
     .footer{margin-top:14px;color:var(--muted);font-size:12px}
+    
     .table thead th.sortable{cursor:pointer;user-select:none}
     .table thead th.sortable:hover{background:rgba(255,255,255,0.06)}
     .sort-ind{opacity:.7;margin-left:6px;font-size:11px}
+    
     @media (max-width:980px){
-      .span-3,.span-6{grid-column:span 12}
+      .span-3,.span-4,.span-6{grid-column:span 12}
       .chartbox{height:280px}
       header{align-items:flex-start;flex-direction:column}
     }
@@ -88,22 +100,27 @@
 
   <section class="grid" style="margin-bottom:14px;">
     <div class="card span-3 kpi">
-      <div class="label">Rendimento totale (ponderato per il peso)</div>
+      <div class="label">Rendimento Totale (Netto)</div>
       <div class="value" id="kpiTotal">—</div>
-      <div class="hint">Somma di peso × P&amp;L%</div>
+      <div class="hint">Include posizioni aperte e chiuse</div>
     </div>
-    <div class="card span-3 kpi">
-      <div class="label">Numero posizioni</div>
-      <div class="value" id="kpiN">—</div>
-      <div class="hint">Numero righe in tabella</div>
+
+    <div class="card span-3 kpi" style="border:1px solid rgba(125, 211, 252, 0.3);">
+      <div class="label" style="color:var(--realized)">Profitto Realizzato (Incassato)</div>
+      <div class="value realized" id="kpiRealized">—</div>
+      <div class="hint" style="color:#a0e0ff;">
+        % calcolata sul <b>capitale totale</b>,<br>non sulla singola trade.
+      </div>
     </div>
+
     <div class="card span-3 kpi">
-      <div class="label">Miglior rendimento</div>
+      <div class="label">Migliore (Aperta)</div>
       <div class="value" id="kpiBest">—</div>
       <div class="hint" id="kpiBestHint">—</div>
     </div>
+
     <div class="card span-3 kpi">
-      <div class="label">Peggior rendimento</div>
+      <div class="label">Peggiore (Aperta)</div>
       <div class="value" id="kpiWorst">—</div>
       <div class="hint" id="kpiWorstHint">—</div>
     </div>
@@ -111,27 +128,27 @@
 
   <section class="grid">
     <div class="card span-6">
-      <h2>Allocazione (Peso %)</h2>
+      <h2>Allocazione Attuale (Peso %)</h2>
       <div class="chartbox"><canvas id="chartAlloc"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Allocazione per asset (Peso %)</h2>
+      <h2>Allocazione per Asset</h2>
       <div class="chartbox"><canvas id="chartAsset"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Peso vs P&amp;L (dispersione)</h2>
+      <h2>Peso vs P&L (Posizioni Aperte)</h2>
       <div class="chartbox"><canvas id="chartScatter"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Contributo al rendimento (punti %)</h2>
+      <h2>Contributo al Rendimento (punti %)</h2>
       <div class="chartbox"><canvas id="chartContrib"></canvas></div>
     </div>
 
     <div class="card span-12">
-      <h2>Tabella posizioni</h2>
+      <h2>Posizioni Aperte (A Mercato)</h2>
       <div class="table-wrap">
         <table class="table" id="tbl">
           <thead>
@@ -139,41 +156,82 @@
               <th class="sortable" data-key="Ticker">Ticker<span class="sort-ind"></span></th>
               <th class="sortable" data-key="Name">Nome<span class="sort-ind"></span></th>
               <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
-              <th class="sortable" data-key="DataAcquisto">Data acquisto<span class="sort-ind"></span></th>
+              <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Weight">Peso %<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Entry">Prezzo acquisto<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Current">Prezzo attuale<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="PnL">P&amp;L %<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="Entry">Prezzo Acq.<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="Current">Prezzo Att.<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="PnL">P&L %<span class="sort-ind"></span></th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
-      <div class="footer">P&amp;L% = (Prezzo attuale − Prezzo acquisto) / Prezzo acquisto.</div>
+      <div class="footer">La liquidità derivante dalle vendite è inclusa qui per mantenere il peso corretto.</div>
     </div>
+
+    <div class="card span-12">
+      <h2>Storico Operazioni Chiuse</h2>
+      <div class="table-wrap">
+        <table class="table" id="tblClosed">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Nome</th>
+              <th>Asset</th>
+              <th>Data Acq.</th>
+              <th>Data Vendita</th>
+              <th class="right">Peso (alla vendita)</th>
+              <th class="right">Prezzo Acq.</th>
+              <th class="right">Prezzo Vendita</th>
+              <th class="right">P&L Trade %</th>
+              <th class="right">Contributo Totale %</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
   </section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 /* =========================
-   1) DATI (EDITA QUI)
+   1) DATI
    ========================= */
 const DATA = {
-  asOf: "13/01/2026", // solo testo in alto
+  asOf: "23/01/2026",
+  
+  // 1a. POSIZIONI APERTE (La liquidità ex-Gold è qui)
   table: [
-    { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,  DataAcquisto:"23/10/2025" },
-    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.172,  DataAcquisto:"22/10/2025" },
+    { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,    DataAcquisto:"23/10/2025" },
+    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.172, DataAcquisto:"22/10/2025" },
     { Ticker:"ABEC.DE",       Name:"Alphabet(Google)", Asset:"Stock",  Weight:9.49,  Entry:271.88,    Current:286.4, DataAcquisto:"05/01/2026" },
-    { Ticker:"AHLA.DE",       Name:"Alibaba", Asset:"Stock",  Weight:9.11,  Entry:134.49,    Current:151, DataAcquisto:"10/12/2025" },
-    { Ticker:"6RJ0.MU",       Name:"Rocket Lab", Asset:"Stock",  Weight:7.89,  Entry:52.28,     Current:75,  DataAcquisto:"16/12/2025" },
-    { Ticker:"1810.HK",       Name:"Xiaomi", Asset:"Stock",  Weight:6.68,  Entry:57.90,     Current:35.24,  DataAcquisto:"02/12/2025" },
-    { Ticker:"MFEA.MI",       Name:"Media for Europe (Mediaset)", Asset:"Stock",  Weight:6.22,  Entry:3.04,      Current:3.108,  DataAcquisto:"01/12/2025" },
-    { Ticker:"WNUC.DE",       Name:"WisdomTree uranium and nuclear energy etf", Asset:"ETF",    Weight:6.45,  Entry:46.9,     Current:57,  DataAcquisto:"12/12/2025" },
+    { Ticker:"AHLA.DE",       Name:"Alibaba", Asset:"Stock",  Weight:9.11,  Entry:134.49,    Current:151,   DataAcquisto:"10/12/2025" },
+    { Ticker:"6RJ0.MU",       Name:"Rocket Lab", Asset:"Stock",  Weight:7.89,  Entry:52.28,     Current:75,    DataAcquisto:"16/12/2025" },
+    { Ticker:"1810.HK",       Name:"Xiaomi", Asset:"Stock",  Weight:6.68,  Entry:57.90,     Current:35.24, DataAcquisto:"02/12/2025" },
+    { Ticker:"MFEA.MI",       Name:"Media for Europe", Asset:"Stock",  Weight:6.22,  Entry:3.04,      Current:3.108, DataAcquisto:"01/12/2025" },
+    { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57,    DataAcquisto:"12/12/2025" },
     { Ticker:"TL0.DE",        Name:"Tesla", Asset:"Stock",  Weight:3.11,  Entry:388.78,    Current:373.2, DataAcquisto:"10/12/2025" },
-    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:3.385,   DataAcquisto:"31/12/2025" },
-    { Ticker:"GC=F",          Name:"Gold", Asset:"Futures",Weight:1.11,  Entry:3990,      Current:4833.8,   DataAcquisto:"10/12/2025" },
+    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:3.385, DataAcquisto:"31/12/2025" },
+    // Cash generato dalla vendita del Gold (Peso originale mantenuto per allocazione)
+    { Ticker:"CASH",          Name:"Liquidità (da vendita Gold)", Asset:"Cash", Weight:1.11,  Entry:1,         Current:1,     DataAcquisto:"23/01/2026" },
   ],
+
+  // 1b. POSIZIONI CHIUSE
+  closed: [
+    { 
+      Ticker:"GC=F", 
+      Name:"Gold", 
+      Asset:"Futures", 
+      Weight:1.11,       // Peso che aveva al momento della vendita
+      Entry:3990, 
+      Exit:4946,         // Prezzo di chiusura
+      DataAcquisto:"10/12/2025",
+      DataVendita:"23/01/2026"
+    }
+  ]
 };
 
 /* =========================
@@ -212,10 +270,14 @@ const getComparable = (row, key) => {
 };
 
 /* =========================
-   3) DERIVATI (PnL, KPI, array grafici)
+   3) LOGICA CALCOLI
    ========================= */
 function recomputeRowsPnL() {
+  // PnL righe aperte
   DATA.table.forEach(r => { r.PnL = computePnL(r.Entry, r.Current); });
+  
+  // PnL righe chiuse
+  DATA.closed.forEach(r => { r.PnL = computePnL(r.Entry, r.Exit); });
 }
 
 function buildDerived() {
@@ -223,17 +285,31 @@ function buildDerived() {
   const weights = DATA.table.map(r => Number(r.Weight) || 0);
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  // KPI total (peso * pnl / 100)
-  const totalReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0) * (Number(r.PnL)||0), 0) / 100;
+  // 1. Calcolo Rendimento Non Realizzato (Open)
+  // Nota: Cash ha PnL 0, quindi non aggiunge nulla al numeratore, ma il suo peso è nel denominatore.
+  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0) * (Number(r.PnL)||0), 0) / 100;
 
-  // best/worst
+  // 2. Calcolo Rendimento Realizzato (Closed)
+  // Formula: Somma di (Peso * PnL_Trade / 100)
+  const realizedReturn = DATA.closed.reduce((acc, r) => {
+    const tradePnL = computePnL(r.Entry, r.Exit);
+    const contrib = (Number(r.Weight)||0) * tradePnL / 100;
+    return acc + contrib;
+  }, 0);
+
+  // Totale
+  const totalReturn = unrealizedReturn + realizedReturn;
+
+  // Best/Worst (solo tra le aperte)
   let best = null, worst = null;
   DATA.table.forEach(r => {
+    // Ignoriamo Cash per best/worst
+    if (r.Asset === 'Cash') return;
     if (!best || Number(r.PnL) > Number(best.PnL)) best = r;
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
-  // asset allocation
+  // Asset allocation
   const assetMap = new Map();
   DATA.table.forEach(r => {
     const a = r.Asset ?? '';
@@ -242,16 +318,24 @@ function buildDerived() {
   const assetLabels = Array.from(assetMap.keys());
   const assetWeights = assetLabels.map(a => assetMap.get(a));
 
-  // scatter points
-  const scatterPoints = labels.map((t, i) => ({ x: weights[i], y: pnls[i], label: t }));
+  // Scatter
+  const scatterPoints = labels.map((t, i) => ({ 
+    x: weights[i], 
+    y: pnls[i], 
+    label: t,
+    // Se è cash lo mettiamo grigio nel grafico scatter se vuoi, ma ChartJS lo gestisce auto.
+  }));
 
-  // contrib sorted
+  // Contrib (Includiamo anche il Realizzato aggregato come voce? No, mostriamo il contributo delle aperte + nota)
+  // Oppure possiamo aggiungere le chiuse al grafico dei contributi? 
+  // Per ora manteniamo il grafico contributi coerente con la tabella active
   const contrib = labels.map((t, i) => ({ label: t, value: (weights[i] * pnls[i]) / 100 }));
   contrib.sort((a, b) => b.value - a.value);
 
   return {
     labels, weights, pnls,
     totalReturn,
+    realizedReturn,
     nPositions: DATA.table.length,
     bestTicker: best?.Ticker ?? '—',
     bestPnL: Number(best?.PnL ?? 0),
@@ -264,24 +348,30 @@ function buildDerived() {
 }
 
 /* =========================
-   4) RENDER KPI + TABELLA
+   4) RENDER
    ========================= */
 function renderKPI(d) {
   document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf || '—'}`;
 
+  // Totale
   const totalEl = document.getElementById('kpiTotal');
   totalEl.className = 'value ' + (d.totalReturn >= 0 ? 'pos' : 'neg');
   totalEl.textContent = fmt(d.totalReturn) + '%';
 
-  document.getElementById('kpiN').textContent = d.nPositions;
+  // Realizzato
+  const realEl = document.getElementById('kpiRealized');
+  realEl.textContent = '+' + fmt(d.realizedReturn) + '%'; 
+  // Nota: ho forzato il '+' visivo, se fosse negativo andrebbe gestito logicamente.
 
+  // Best/Worst
   document.getElementById('kpiBest').textContent = d.bestTicker;
-  document.getElementById('kpiBestHint').innerHTML = `P&amp;L: <span class="pos">${fmt(d.bestPnL)}%</span>`;
+  document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(d.bestPnL)}%</span>`;
 
   document.getElementById('kpiWorst').textContent = d.worstTicker;
-  document.getElementById('kpiWorstHint').innerHTML = `P&amp;L: <span class="neg">${fmt(d.worstPnL)}%</span>`;
+  document.getElementById('kpiWorstHint').innerHTML = `P&L: <span class="neg">${fmt(d.worstPnL)}%</span>`;
 }
 
+// Render Tabella Aperte
 const tbody = document.querySelector('#tbl tbody');
 const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
 let sortKey = 'Weight';
@@ -307,7 +397,12 @@ function renderTable() {
 
   sorted.forEach(r => {
     const tr = document.createElement('tr');
-    const pnlClass = Number(r.PnL) >= 0 ? 'pos' : 'neg';
+    // Se è Cash, PnL neutro
+    const isCash = r.Ticker === 'CASH';
+    const pnlVal = Number(r.PnL);
+    let pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
+    if(isCash) pnlClass = 'muted';
+
     tr.innerHTML =
       `<td class="mono">${r.Ticker ?? ''}</td>` +
       `<td>${r.Name ?? ''}</td>` +
@@ -316,11 +411,35 @@ function renderTable() {
       `<td class="right mono">${fmt(r.Weight)}</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Current)}</td>` +
-      `<td class="right ${pnlClass}">${fmt(r.PnL)}%</td>`;
+      `<td class="right ${pnlClass}">${isCash ? '-' : fmt(r.PnL)+'%'}</td>`;
     tbody.appendChild(tr);
   });
-
   setIndicators();
+}
+
+// Render Tabella Chiuse
+function renderClosedTable() {
+  const tb = document.querySelector('#tblClosed tbody');
+  tb.innerHTML = '';
+  DATA.closed.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = 'closed-row';
+    const pnl = Number(r.PnL);
+    const contrib = (r.Weight * pnl) / 100;
+    
+    tr.innerHTML = 
+      `<td class="mono">${r.Ticker}</td>` +
+      `<td>${r.Name}</td>` +
+      `<td><span class="tag">${r.Asset}</span></td>` +
+      `<td class="mono">${r.DataAcquisto}</td>` +
+      `<td class="mono">${r.DataVendita}</td>` +
+      `<td class="right mono">${fmt(r.Weight)}%</td>` +
+      `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
+      `<td class="right mono">${fmtSmart(r.Exit)}</td>` +
+      `<td class="right ${pnl>=0?'pos':'neg'}">${fmt(pnl)}%</td>` +
+      `<td class="right realized">+${fmt(contrib)}%</td>`;
+    tb.appendChild(tr);
+  });
 }
 
 headers.forEach(th => {
@@ -338,7 +457,7 @@ headers.forEach(th => {
 });
 
 /* =========================
-   5) GRAFICI (con update)
+   5) GRAFICI
    ========================= */
 const common = {
   responsive: true,
@@ -366,19 +485,14 @@ function initCharts(d) {
       datasets: [{
         data: d.weights,
         backgroundColor: palette,
-        hoverBackgroundColor: palette,
         borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-        hoverOffset: 6
+        borderWidth: 1
       }]
     },
     options: {
       ...common,
       cutout: '58%',
-      plugins: {
-        ...common.plugins,
-        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${fmt(ctx.parsed)}%` } }
-      }
+      plugins: { ...common.plugins, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed)}%` } } }
     }
   });
 
@@ -387,11 +501,7 @@ function initCharts(d) {
     data: { labels: d.assetLabels, datasets: [{ label:'Peso %', data: d.assetWeights, borderWidth: 0 }] },
     options: {
       ...common,
-      plugins: {
-        ...common.plugins,
-        legend: { display:false },
-        tooltip: { callbacks: { label: (ctx) => ` ${fmt(ctx.parsed.y)}%` } }
-      },
+      plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` ${fmt(c.parsed.y)}%` } } },
       scales: {
         x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
         y: { ticks: { color:'rgba(255,255,255,0.7)', callback:(v)=> v+'%' }, grid:{ color:'rgba(255,255,255,0.08)' } }
@@ -416,16 +526,8 @@ function initCharts(d) {
         }
       },
       scales: {
-        x: {
-          title: { display:true, text:'Peso %', color:'rgba(255,255,255,0.78)' },
-          ticks: { color:'rgba(255,255,255,0.7)', callback:(v)=> v+'%' },
-          grid: { color:'rgba(255,255,255,0.08)' }
-        },
-        y: {
-          title: { display:true, text:'P&L %', color:'rgba(255,255,255,0.78)' },
-          ticks: { color:'rgba(255,255,255,0.7)', callback:(v)=> v+'%' },
-          grid: { color:'rgba(255,255,255,0.08)' }
-        }
+        x: { title: { display:true, text:'Peso %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
+        y: { title: { display:true, text:'P&L %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
@@ -438,40 +540,24 @@ function initCharts(d) {
     },
     options: {
       ...common,
-      plugins: {
-        ...common.plugins,
-        legend: { display:false },
-        tooltip: { callbacks: { label: (ctx) => ` ${fmt(ctx.parsed.y, 2)} punti %` } }
-      },
+      plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` ${fmt(c.parsed.y, 2)} punti %` } } },
       scales: {
         x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
-        y: {
-          title: { display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' },
-          ticks: { color:'rgba(255,255,255,0.7)' },
-          grid: { color:'rgba(255,255,255,0.08)' }
-        }
+        y: { title: { display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
 }
 
 function updateCharts(d) {
-  // alloc
   chartAlloc.data.labels = d.labels;
   chartAlloc.data.datasets[0].data = d.weights;
-
-  // asset
   chartAsset.data.labels = d.assetLabels;
   chartAsset.data.datasets[0].data = d.assetWeights;
-
-  // scatter
   chartScatter.data.datasets[0].data = d.scatterPoints;
-
-  // contrib
   chartContrib.data.labels = d.contrib.map(x => x.label);
   chartContrib.data.datasets[0].data = d.contrib.map(x => x.value);
 
-  // redraw
   chartAlloc.update();
   chartAsset.update();
   chartScatter.update();
@@ -486,6 +572,7 @@ function rebuildAll() {
   const d = buildDerived();
   renderKPI(d);
   renderTable();
+  renderClosedTable(); // Renderizza la nuova tabella
 
   if (!chartAlloc) initCharts(d);
   else updateCharts(d);
