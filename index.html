@@ -12,7 +12,7 @@
       --radius:18px;
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      --pos: #8cffbe; --neg: #ff8c8c; --realized: #7dd3fc;
+      --pos: #8cffbe; --neg: #ff8c8c; --realized: #7dd3fc; --lev: #e0aaff;
     }
     *{box-sizing:border-box}
     body{
@@ -41,7 +41,6 @@
     .kpi .hint{font-size:11px;color:var(--muted); line-height:1.4}
     
     .span-3{grid-column:span 3}
-    .span-4{grid-column:span 4} /* Modificato per layout a 3 colonne sopra */
     .span-6{grid-column:span 6}
     .span-12{grid-column:span 12}
     
@@ -57,14 +56,16 @@
     .table tbody td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;white-space:nowrap}
     .table tbody tr:hover{background:rgba(255,255,255,0.04)}
     
-    /* Stili specifici tabella chiuse */
-    .closed-row { opacity: 0.7; }
+    .closed-row { opacity: 0.6; }
     .closed-row:hover { opacity: 1; }
 
     .right{text-align:right}
     .tag{
       font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--stroke);
       background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block
+    }
+    .lev-tag{
+      color: var(--lev); border-color: rgba(224, 170, 255, 0.3); background: rgba(224, 170, 255, 0.05); margin-left:4px;
     }
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
@@ -77,7 +78,7 @@
     .sort-ind{opacity:.7;margin-left:6px;font-size:11px}
     
     @media (max-width:980px){
-      .span-3,.span-4,.span-6{grid-column:span 12}
+      .span-3,.span-6{grid-column:span 12}
       .chartbox{height:280px}
       header{align-items:flex-start;flex-direction:column}
     }
@@ -102,14 +103,14 @@
     <div class="card span-3 kpi">
       <div class="label">Rendimento Totale (Netto)</div>
       <div class="value" id="kpiTotal">—</div>
-      <div class="hint">Include posizioni aperte e chiuse</div>
+      <div class="hint">Include P&L Aperto + P&L Chiuso</div>
     </div>
 
     <div class="card span-3 kpi" style="border:1px solid rgba(125, 211, 252, 0.3);">
       <div class="label" style="color:var(--realized)">Profitto Realizzato (Incassato)</div>
       <div class="value realized" id="kpiRealized">—</div>
       <div class="hint" style="color:#a0e0ff;">
-        % calcolata sul <b>capitale totale</b>,<br>non sulla singola trade.
+        % calcolata sul capitale totale
       </div>
     </div>
 
@@ -128,7 +129,7 @@
 
   <section class="grid">
     <div class="card span-6">
-      <h2>Allocazione Attuale (Peso %)</h2>
+      <h2>Allocazione (Peso %)</h2>
       <div class="chartbox"><canvas id="chartAlloc"></canvas></div>
     </div>
 
@@ -158,15 +159,15 @@
               <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
               <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Weight">Peso %<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Entry">Prezzo Acq.<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Current">Prezzo Att.<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="Entry">Entry<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="Current">Attuale<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="PnL">P&L %<span class="sort-ind"></span></th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
-      <div class="footer">La liquidità derivante dalle vendite è inclusa qui per mantenere il peso corretto.</div>
+      <div class="footer">Nota: Il P&L include l'effetto della leva finanziaria dove indicata.</div>
     </div>
 
     <div class="card span-12">
@@ -178,20 +179,18 @@
               <th>Ticker</th>
               <th>Nome</th>
               <th>Asset</th>
-              <th>Data Acq.</th>
               <th>Data Vendita</th>
-              <th class="right">Peso (alla vendita)</th>
-              <th class="right">Prezzo Acq.</th>
-              <th class="right">Prezzo Vendita</th>
-              <th class="right">P&L Trade %</th>
-              <th class="right">Contributo Totale %</th>
+              <th class="right">Peso</th>
+              <th class="right">Entry</th>
+              <th class="right">Exit</th>
+              <th class="right">P&L Trade</th>
+              <th class="right">Contributo Totale</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
-
   </section>
 </div>
 
@@ -203,7 +202,7 @@
 const DATA = {
   asOf: "23/01/2026",
   
-  // 1a. POSIZIONI APERTE (La liquidità ex-Gold è qui)
+  // LEVA: Se non specificata, è 1.
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,    DataAcquisto:"23/10/2025" },
     { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.172, DataAcquisto:"22/10/2025" },
@@ -215,19 +214,28 @@ const DATA = {
     { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57,    DataAcquisto:"12/12/2025" },
     { Ticker:"TL0.DE",        Name:"Tesla", Asset:"Stock",  Weight:3.11,  Entry:388.78,    Current:373.2, DataAcquisto:"10/12/2025" },
     { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:3.385, DataAcquisto:"31/12/2025" },
-    // Cash generato dalla vendita del Gold (Peso originale mantenuto per allocazione)
-    { Ticker:"CASH",          Name:"Liquidità (da vendita Gold)", Asset:"Cash", Weight:1.11,  Entry:1,         Current:1,     DataAcquisto:"23/01/2026" },
+    
+    // NUOVA OPERAZIONE BTC (Cash reinvestito -> 1.11% Peso Equity)
+    { 
+      Ticker:"BTC-USD", 
+      Name:"Bitcoin", 
+      Asset:"Crypto", 
+      Weight:1.11,      // Capitale derivato dal Gold
+      Entry:89554, 
+      Current:89554,    // AGGIORNARE QUI il prezzo attuale
+      Leverage: 3,      // LEVA 3X
+      DataAcquisto:"23/01/2026" 
+    },
   ],
 
-  // 1b. POSIZIONI CHIUSE
   closed: [
     { 
       Ticker:"GC=F", 
       Name:"Gold", 
       Asset:"Futures", 
-      Weight:1.11,       // Peso che aveva al momento della vendita
+      Weight:1.11,       
       Entry:3990, 
-      Exit:4946,         // Prezzo di chiusura
+      Exit:4946,         
       DataAcquisto:"10/12/2025",
       DataVendita:"23/01/2026"
     }
@@ -235,7 +243,7 @@ const DATA = {
 };
 
 /* =========================
-   2) UTIL
+   2) UTIL & CALCOLI
    ========================= */
 const fmt = (x, d=2) => Number(x).toLocaleString('it-IT', { minimumFractionDigits:d, maximumFractionDigits:d });
 
@@ -244,13 +252,14 @@ const fmtSmart = (x) => {
   if (!isFinite(n)) return '';
   const a = Math.abs(n);
   if (a !== 0 && a < 1) return n.toLocaleString('it-IT', { minimumFractionDigits: 3, maximumFractionDigits: 6 });
-  return n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-const computePnL = (entry, current) => {
+// Modificato per gestire LEVA
+const computePnL = (entry, current, leverage = 1) => {
   const e = Number(entry), c = Number(current);
   if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
-  return ((c - e) / e) * 100;
+  return ((c - e) / e) * 100 * leverage; 
 };
 
 const parseITDate = (s) => {
@@ -270,14 +279,18 @@ const getComparable = (row, key) => {
 };
 
 /* =========================
-   3) LOGICA CALCOLI
+   3) LOGICA
    ========================= */
 function recomputeRowsPnL() {
-  // PnL righe aperte
-  DATA.table.forEach(r => { r.PnL = computePnL(r.Entry, r.Current); });
+  // PnL righe aperte (passiamo la leva se esiste, altrimenti 1)
+  DATA.table.forEach(r => { 
+    r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1); 
+  });
   
-  // PnL righe chiuse
-  DATA.closed.forEach(r => { r.PnL = computePnL(r.Entry, r.Exit); });
+  // PnL righe chiuse (normalmente senza leva dinamica post-chiusura, o fissa a 1 se non specificata)
+  DATA.closed.forEach(r => { 
+    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1); 
+  });
 }
 
 function buildDerived() {
@@ -285,26 +298,22 @@ function buildDerived() {
   const weights = DATA.table.map(r => Number(r.Weight) || 0);
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  // 1. Calcolo Rendimento Non Realizzato (Open)
-  // Nota: Cash ha PnL 0, quindi non aggiunge nulla al numeratore, ma il suo peso è nel denominatore.
+  // 1. Rendimento Aperte
   const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0) * (Number(r.PnL)||0), 0) / 100;
 
-  // 2. Calcolo Rendimento Realizzato (Closed)
-  // Formula: Somma di (Peso * PnL_Trade / 100)
+  // 2. Rendimento Chiuse
   const realizedReturn = DATA.closed.reduce((acc, r) => {
-    const tradePnL = computePnL(r.Entry, r.Exit);
+    // Ricalcoliamo PnL trade chiusa (semplice)
+    const tradePnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
     const contrib = (Number(r.Weight)||0) * tradePnL / 100;
     return acc + contrib;
   }, 0);
 
-  // Totale
   const totalReturn = unrealizedReturn + realizedReturn;
 
-  // Best/Worst (solo tra le aperte)
+  // Best/Worst (Open)
   let best = null, worst = null;
   DATA.table.forEach(r => {
-    // Ignoriamo Cash per best/worst
-    if (r.Asset === 'Cash') return;
     if (!best || Number(r.PnL) > Number(best.PnL)) best = r;
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
@@ -322,13 +331,10 @@ function buildDerived() {
   const scatterPoints = labels.map((t, i) => ({ 
     x: weights[i], 
     y: pnls[i], 
-    label: t,
-    // Se è cash lo mettiamo grigio nel grafico scatter se vuoi, ma ChartJS lo gestisce auto.
+    label: t 
   }));
 
-  // Contrib (Includiamo anche il Realizzato aggregato come voce? No, mostriamo il contributo delle aperte + nota)
-  // Oppure possiamo aggiungere le chiuse al grafico dei contributi? 
-  // Per ora manteniamo il grafico contributi coerente con la tabella active
+  // Contrib
   const contrib = labels.map((t, i) => ({ label: t, value: (weights[i] * pnls[i]) / 100 }));
   contrib.sort((a, b) => b.value - a.value);
 
@@ -360,18 +366,15 @@ function renderKPI(d) {
 
   // Realizzato
   const realEl = document.getElementById('kpiRealized');
-  realEl.textContent = '+' + fmt(d.realizedReturn) + '%'; 
-  // Nota: ho forzato il '+' visivo, se fosse negativo andrebbe gestito logicamente.
+  realEl.textContent = (d.realizedReturn >= 0 ? '+' : '') + fmt(d.realizedReturn) + '%'; 
 
   // Best/Worst
   document.getElementById('kpiBest').textContent = d.bestTicker;
   document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(d.bestPnL)}%</span>`;
-
   document.getElementById('kpiWorst').textContent = d.worstTicker;
   document.getElementById('kpiWorstHint').innerHTML = `P&L: <span class="neg">${fmt(d.worstPnL)}%</span>`;
 }
 
-// Render Tabella Aperte
 const tbody = document.querySelector('#tbl tbody');
 const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
 let sortKey = 'Weight';
@@ -397,47 +400,47 @@ function renderTable() {
 
   sorted.forEach(r => {
     const tr = document.createElement('tr');
-    // Se è Cash, PnL neutro
-    const isCash = r.Ticker === 'CASH';
     const pnlVal = Number(r.PnL);
-    let pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
-    if(isCash) pnlClass = 'muted';
+    const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
+    
+    // Badge Leva
+    const levBadge = (r.Leverage && r.Leverage > 1) 
+      ? `<span class="tag lev-tag">${r.Leverage}x</span>` 
+      : '';
 
     tr.innerHTML =
       `<td class="mono">${r.Ticker ?? ''}</td>` +
       `<td>${r.Name ?? ''}</td>` +
-      `<td><span class="tag">${r.Asset ?? ''}</span></td>` +
+      `<td><span class="tag">${r.Asset ?? ''}</span>${levBadge}</td>` +
       `<td class="mono">${r.DataAcquisto ?? ''}</td>` +
       `<td class="right mono">${fmt(r.Weight)}</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Current)}</td>` +
-      `<td class="right ${pnlClass}">${isCash ? '-' : fmt(r.PnL)+'%'}</td>`;
+      `<td class="right ${pnlClass}">${fmt(r.PnL)}%</td>`;
     tbody.appendChild(tr);
   });
   setIndicators();
 }
 
-// Render Tabella Chiuse
 function renderClosedTable() {
   const tb = document.querySelector('#tblClosed tbody');
   tb.innerHTML = '';
   DATA.closed.forEach(r => {
     const tr = document.createElement('tr');
     tr.className = 'closed-row';
-    const pnl = Number(r.PnL);
+    const pnl = computePnL(r.Entry, r.Exit, r.Leverage||1);
     const contrib = (r.Weight * pnl) / 100;
     
     tr.innerHTML = 
       `<td class="mono">${r.Ticker}</td>` +
       `<td>${r.Name}</td>` +
       `<td><span class="tag">${r.Asset}</span></td>` +
-      `<td class="mono">${r.DataAcquisto}</td>` +
       `<td class="mono">${r.DataVendita}</td>` +
       `<td class="right mono">${fmt(r.Weight)}%</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Exit)}</td>` +
       `<td class="right ${pnl>=0?'pos':'neg'}">${fmt(pnl)}%</td>` +
-      `<td class="right realized">+${fmt(contrib)}%</td>`;
+      `<td class="right realized">${contrib>=0?'+':''}${fmt(contrib)}%</td>`;
     tb.appendChild(tr);
   });
 }
@@ -462,11 +465,7 @@ headers.forEach(th => {
 const common = {
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      labels: { color: 'rgba(255,255,255,0.82)', boxWidth: 10, font: { size: 11 } }
-    }
-  },
+  plugins: { legend: { labels: { color: 'rgba(255,255,255,0.82)', boxWidth: 10, font: { size: 11 } } } },
   scales: {
     x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
     y: { ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
@@ -564,15 +563,12 @@ function updateCharts(d) {
   chartContrib.update();
 }
 
-/* =========================
-   6) BOOT
-   ========================= */
 function rebuildAll() {
   recomputeRowsPnL();
   const d = buildDerived();
   renderKPI(d);
   renderTable();
-  renderClosedTable(); // Renderizza la nuova tabella
+  renderClosedTable();
 
   if (!chartAlloc) initCharts(d);
   else updateCharts(d);
