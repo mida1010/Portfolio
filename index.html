@@ -72,6 +72,9 @@
     .exposure-val {
       display:block; font-size:11px; color:var(--lev); margin-top:2px; opacity:0.9;
     }
+    .norm-val {
+      display:block; font-size:10px; color:var(--muted); margin-top:2px; font-style:italic;
+    }
 
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
@@ -135,7 +138,7 @@
 
   <section class="grid">
     <div class="card span-6">
-      <h2>Allocazione Equity (I Tuoi Soldi)</h2>
+      <h2>Allocazione Equity (Ribilanciata 100%)</h2>
       <div class="chartbox"><canvas id="chartAlloc"></canvas></div>
     </div>
 
@@ -174,7 +177,7 @@
         </table>
       </div>
       <div class="footer">
-        Nota: "Peso Equity" è il capitale investito. "Effettivo" (viola) è l'esposizione di mercato con la leva.
+        Nota: Il sistema ha normalizzato automaticamente i pesi affinché la somma sia 100%. "Eff" indica l'esposizione con leva.
       </div>
     </div>
 
@@ -222,16 +225,16 @@ const DATA = {
     { Ticker:"TL0.DE",        Name:"Tesla", Asset:"Stock",  Weight:3.11,  Entry:388.78,    Current:373.2, DataAcquisto:"10/12/2025" },
     { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:3.385, DataAcquisto:"31/12/2025" },
     
-    // BTC: Peso Equity = 1.37% (Il capitale reale che hai messo, derivato dal Gold + Profitti)
-    // Leva 3x significa che ti esponi per il 4.11%, ma il "Weight" contabile deve restare 1.37
+    // Hai inserito 1.37%, facendo sballare il totale a 101.26%.
+    // Il codice ora NORMALIZZA tutto automaticamente.
     { 
       Ticker:"BTC-USD", 
       Name:"Bitcoin", 
       Asset:"Crypto", 
-      Weight:1.37,      // 1.11 (Gold base) * 1.24 (Profitto) ~= 1.37%
+      Weight:1.37,      
       Entry:89554, 
-      Current:89554,    // AGGIORNARE QUI
-      Leverage: 3,      // LEVA 3X
+      Current:89554,    
+      Leverage: 3,      
       DataAcquisto:"23/01/2026" 
     },
   ],
@@ -263,7 +266,6 @@ const fmtSmart = (x) => {
   return n.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-// Calcolo PnL con Leva
 const computePnL = (entry, current, leverage = 1) => {
   const e = Number(entry), c = Number(current);
   if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
@@ -287,16 +289,26 @@ const getComparable = (row, key) => {
 };
 
 /* =========================
-   3) LOGICA
+   3) LOGICA CON NORMALIZZAZIONE
    ========================= */
-function recomputeRowsPnL() {
-  DATA.table.forEach(r => { 
-    r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1); 
-    // Calcoliamo l'Esposizione Effettiva (Effective Weight) per i grafici del rischio
-    // Ma non tocchiamo r.Weight che serve per l'Equity.
-    r.EffWeight = (r.Weight || 0) * (r.Leverage || 1);
-  });
+function normalizeWeights() {
+  // 1. Calcola la somma attuale dei pesi inseriti (es. 101.26%)
+  const rawSum = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0), 0);
   
+  // 2. Calcola il fattore di correzione se diverso da 100
+  // Se la somma è 101.26, dobbiamo dividere tutto per 1.0126
+  const factor = rawSum > 0 ? (100 / rawSum) : 1;
+
+  DATA.table.forEach(r => {
+    r.RawWeight = r.Weight; // Salviamo il dato originale
+    r.NormWeight = r.Weight * factor; // Peso normalizzato (Equity reale in %)
+    
+    // PnL & Esposizione calcolati sul peso normalizzato per coerenza
+    r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1);
+    r.EffWeight = r.NormWeight * (r.Leverage || 1);
+  });
+
+  // Anche le chiuse le lasciamo come storiche, ma il calcolo PnL non cambia
   DATA.closed.forEach(r => { 
     r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1); 
   });
@@ -304,11 +316,12 @@ function recomputeRowsPnL() {
 
 function buildDerived() {
   const labels = DATA.table.map(r => r.Ticker);
-  const weights = DATA.table.map(r => Number(r.Weight) || 0); // Pesi Equity
+  // Usiamo NormWeight per i grafici
+  const weights = DATA.table.map(r => Number(r.NormWeight) || 0); 
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  // Rendimento Aperte
-  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0) * (Number(r.PnL)||0), 0) / 100;
+  // Rendimento Aperte (basato su pesi ribilanciati)
+  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.NormWeight)||0) * (Number(r.PnL)||0), 0) / 100;
 
   // Rendimento Chiuse
   const realizedReturn = DATA.closed.reduce((acc, r) => {
@@ -325,11 +338,10 @@ function buildDerived() {
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
-  // Asset allocation - BARRE (Qui usiamo l'esposizione per vedere il rischio)
+  // Asset allocation - BARRE (Esposizione Effettiva)
   const assetMapExposure = new Map();
   DATA.table.forEach(r => {
     const a = r.Asset ?? '';
-    // Qui sommiamo EffWeight (con leva)
     assetMapExposure.set(a, (assetMapExposure.get(a) || 0) + (Number(r.EffWeight) || 0));
   });
   const assetLabels = Array.from(assetMapExposure.keys());
@@ -393,8 +405,10 @@ function setIndicators() {
 function renderTable() {
   tbody.innerHTML = '';
   const sorted = DATA.table.slice().sort((a, b) => {
-    const A = getComparable(a, sortKey);
-    const B = getComparable(b, sortKey);
+    // Ordiniamo usando NormWeight così è coerente
+    const k = sortKey === 'Weight' ? 'NormWeight' : sortKey;
+    const A = getComparable(a, k);
+    const B = getComparable(b, k);
     if (A < B) return sortDir === 'asc' ? -1 : 1;
     if (A > B) return sortDir === 'asc' ? 1 : -1;
     return 0;
@@ -405,10 +419,12 @@ function renderTable() {
     const pnlVal = Number(r.PnL);
     const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
     
-    // Logica visualizzazione peso vs esposizione
-    let weightHTML = `<span class="mono">${fmt(r.Weight)}%</span>`;
-    let levBadge = '';
+    // Logica visualizzazione: Mostriamo il peso normalizzato
+    let weightHTML = `<span class="mono">${fmt(r.NormWeight)}%</span>`;
     
+    // Se c'è differenza tra quello inserito e quello normalizzato, mostriamo un hint (opzionale)
+    // Ma qui ci interessa la Leva
+    let levBadge = '';
     if (r.Leverage && r.Leverage > 1) {
       levBadge = `<span class="lev-badge">${r.Leverage}x</span>`;
       weightHTML += `<span class="exposure-val">Eff: <b>${fmt(r.EffWeight)}%</b></span>`;
@@ -485,13 +501,12 @@ const palette = ["#4E79A7","#F28E2B","#E15759","#76B7B2","#59A14F","#EDC948","#B
 let chartAlloc, chartAsset, chartScatter, chartContrib;
 
 function initCharts(d) {
-  // Chart 1: Equity (Dove sono i tuoi soldi reali)
   chartAlloc = new Chart(document.getElementById('chartAlloc'), {
     type: 'doughnut',
     data: {
       labels: d.labels,
       datasets: [{
-        data: d.weights, // Usa Weights (Equity)
+        data: d.weights, // Usa NormWeight
         backgroundColor: palette,
         borderColor: 'rgba(255,255,255,0.08)',
         borderWidth: 1
@@ -504,7 +519,6 @@ function initCharts(d) {
     }
   });
 
-  // Chart 2: Asset (Esposizione Reale - QUI si vede la leva, es: Crypto sarà più alto)
   chartAsset = new Chart(document.getElementById('chartAsset'), {
     type: 'bar',
     data: { labels: d.assetLabels, datasets: [{ label:'Esposizione %', data: d.assetWeights, borderWidth: 0, backgroundColor: '#d0aaff' }] },
@@ -574,7 +588,7 @@ function updateCharts(d) {
 }
 
 function rebuildAll() {
-  recomputeRowsPnL();
+  normalizeWeights(); // Calcola i pesi corretti (somma 100%)
   const d = buildDerived();
   renderKPI(d);
   renderTable();
