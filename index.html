@@ -211,7 +211,7 @@
    1) DATI
    ========================= */
 const DATA = {
-  asOf: "05/02/2026",
+  asOf: "06/02/2026",
   
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,     DataAcquisto:"23/10/2025" },
@@ -223,20 +223,7 @@ const DATA = {
     { Ticker:"MFEA.MI",       Name:"Media for Europe", Asset:"Stock",  Weight:6.22,  Entry:3.04,      Current:3.166, DataAcquisto:"01/12/2025" },
     { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57.39,    DataAcquisto:"12/12/2025" },
     { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" },
-    
-    // NUOVA POSIZIONE XIAOMI (GERMANIA)
     { Ticker:"3CP.DE",        Name:"Xiaomi (Ger)", Asset:"Stock",  Weight:2.70,  Entry:3.75,      Current:3.75, DataAcquisto:"05/02/2026" },
-
-    { 
-      Ticker:"BTC-USD", 
-      Name:"Bitcoin", 
-      Asset:"Crypto", 
-      Weight:1.37,      
-      Entry:89554, 
-      Current:89396.7,    
-      Leverage: 3,      
-      DataAcquisto:"23/01/2026" 
-    },
   ],
 
   closed: [
@@ -250,7 +237,6 @@ const DATA = {
       DataAcquisto:"10/12/2025",
       DataVendita:"23/01/2026"
     },
-    // TESLA CHIUSA
     { 
       Ticker:"TL0.DE", 
       Name:"Tesla", 
@@ -260,6 +246,18 @@ const DATA = {
       Exit:338.35,          
       DataAcquisto:"10/12/2025",
       DataVendita:"05/02/2026"
+    },
+    // BITCOIN CHIUSA IN PERDITA
+    { 
+      Ticker:"BTC-USD", 
+      Name:"Bitcoin", 
+      Asset:"Crypto", 
+      Weight:1.37,      
+      Entry:89554, 
+      Exit:60742,   // Prezzo di chiusura da screenshot
+      Leverage: 3,  // Leva mantenuta dal vecchio codice (causerà un grosso drawdawn nel P&L)    
+      DataAcquisto:"23/01/2026",
+      DataVendita:"06/02/2026"
     }
   ]
 };
