@@ -71,6 +71,9 @@
     .exposure-val {
       display:block; font-size:11px; color:var(--lev); margin-top:2px; opacity:0.9;
     }
+    .subweight {
+      display:block; font-size:10px; color:var(--muted); margin-top:2px;
+    }
 
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
@@ -108,15 +111,13 @@
     <div class="card span-3 kpi">
       <div class="label">Rendimento Totale (Netto)</div>
       <div class="value" id="kpiTotal">—</div>
-      <div class="hint">Include P&L Aperto + P&L Chiuso</div>
+      <div class="hint">Include P&L Aperto + P&L Chiuso (su capitale totale)</div>
     </div>
 
     <div class="card span-3 kpi" style="border:1px solid rgba(125, 211, 252, 0.3);">
       <div class="label" style="color:var(--realized)">Profitto Realizzato (Incassato)</div>
       <div class="value realized" id="kpiRealized">—</div>
-      <div class="hint" style="color:#a0e0ff;">
-        % calcolata sul capitale totale
-      </div>
+      <div class="hint" style="color:#a0e0ff;">% calcolata sul capitale totale</div>
     </div>
 
     <div class="card span-3 kpi">
@@ -134,12 +135,12 @@
 
   <section class="grid">
     <div class="card span-6">
-      <h2>Allocazione Equity (Ribilanciata 100%)</h2>
+      <h2>Allocazione Equity (Posizioni Aperte · 100%)</h2>
       <div class="chartbox"><canvas id="chartAlloc"></canvas></div>
     </div>
 
     <div class="card span-6">
-      <h2>Esposizione Asset (Rischio Reale)</h2>
+      <h2>Esposizione Asset (Aperte · con Leva)</h2>
       <div class="chartbox"><canvas id="chartAsset"></canvas></div>
     </div>
 
@@ -149,7 +150,7 @@
     </div>
 
     <div class="card span-6">
-      <h2>Contributo al Rendimento (punti %)</h2>
+      <h2>Contributo al Rendimento (punti % · su capitale totale)</h2>
       <div class="chartbox"><canvas id="chartContrib"></canvas></div>
     </div>
 
@@ -163,7 +164,7 @@
               <th class="sortable" data-key="Name">Nome<span class="sort-ind"></span></th>
               <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
               <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
-              <th class="right sortable" data-key="Weight">Peso Equity<span class="sort-ind"></span></th>
+              <th class="right sortable" data-key="OpenWeight">Peso Equity<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Entry">Entry<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="Current">Attuale<span class="sort-ind"></span></th>
               <th class="right sortable" data-key="PnL">P&L %<span class="sort-ind"></span></th>
@@ -173,7 +174,10 @@
         </table>
       </div>
       <div class="footer">
-        Nota: Il sistema ha normalizzato automaticamente i pesi affinché la somma sia 100%. "Eff" indica l'esposizione con leva.
+        Nota: i pesi vengono calcolati automaticamente.
+        Se una posizione ha <b>Shares</b>, il peso deriva da <b>Shares × Prezzo</b>.
+        Se manca Shares, usa il valore <b>Weight</b> come “peso target” e lo integra nel totale.
+        “Port” = peso sul capitale totale (aperte + capitale storico delle chiuse).
       </div>
     </div>
 
@@ -187,7 +191,7 @@
               <th>Nome</th>
               <th>Asset</th>
               <th>Data Vendita</th>
-              <th class="right">Peso</th>
+              <th class="right">Peso Port</th>
               <th class="right">Entry</th>
               <th class="right">Exit</th>
               <th class="right">P&L Trade</th>
@@ -196,6 +200,10 @@
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+      <div class="footer">
+        Nota: per le chiuse, se c’è <b>Shares</b> il peso deriva dal <b>capitale investito (Shares × Entry)</b>.
+        Se manca Shares, usa <b>Weight</b> come “peso target” storico.
       </div>
     </div>
   </section>
@@ -209,7 +217,7 @@
 const DATA = {
   asOf: "03/03/2026",
 
-  // ✅ MIGA.SG (MicroStrategy) è APERTA (da screenshot: -0.46%, Entry 113.77, Current 113.25)
+  // APERTE
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,     DataAcquisto:"23/10/2025" },
     { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.18, DataAcquisto:"22/10/2025" },
@@ -221,56 +229,20 @@ const DATA = {
     { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57.39,    DataAcquisto:"12/12/2025" },
     { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" },
 
-    // 👉 aggiorna Weight quando vuoi che impatti i KPI (ora l’ho messo uguale al vecchio “slot” Xiaomi DE)
-    { Ticker:"MIGA.SG",       Name:"MicroStrategy", Asset:"Stock",  Weight:2.70, Entry:113.77,   Current:113.25, DataAcquisto:"03/03/2026", Shares:3.085856 }
+    // MicroStrategy APERTA (da screenshot: Shares 3.085856, Cost/Share 113.77, Current 113.25)
+    { Ticker:"MIGA.SG",       Name:"MicroStrategy", Asset:"Stock", Weight:2.70, Shares:3.085856, Entry:113.77, Current:113.25, DataAcquisto:"03/03/2026" }
   ],
 
+  // CHIUSE
   closed: [
-    {
-      Ticker:"GC=F",
-      Name:"Gold",
-      Asset:"Futures",
-      Weight:1.11,
-      Entry:3990,
-      Exit:4946,
-      DataAcquisto:"10/12/2025",
-      DataVendita:"23/01/2026"
-    },
-    {
-      Ticker:"TL0.DE",
-      Name:"Tesla",
-      Asset:"Stock",
-      Weight:3.11,
-      Entry:388.78,
-      Exit:338.35,
-      DataAcquisto:"10/12/2025",
-      DataVendita:"05/02/2026"
-    },
+    { Ticker:"GC=F",  Name:"Gold",  Asset:"Futures", Weight:1.11, Entry:3990, Exit:4946, DataAcquisto:"10/12/2025", DataVendita:"23/01/2026" },
+    { Ticker:"TL0.DE",Name:"Tesla", Asset:"Stock",   Weight:3.11, Entry:388.78, Exit:338.35, DataAcquisto:"10/12/2025", DataVendita:"05/02/2026" },
 
-    // ✅ Xiaomi chiusa (trade precedente)
-    {
-      Ticker:"3CP.F",
-      Name:"Xiaomi (Ger)",
-      Asset:"Stock",
-      Weight:2.70,
-      Entry:3.82,
-      Exit:3.365,
-      DataAcquisto:"05/02/2026",
-      DataVendita:"06/02/2026"
-    },
+    // Xiaomi chiusa (trade precedente)
+    { Ticker:"3CP.F", Name:"Xiaomi (Ger)", Asset:"Stock", Weight:2.70, Entry:3.82, Exit:3.365, DataAcquisto:"05/02/2026", DataVendita:"06/02/2026" },
 
-    // BITCOIN CHIUSA IN PERDITA
-    {
-      Ticker:"BTC-USD",
-      Name:"Bitcoin",
-      Asset:"Crypto",
-      Weight:1.37,
-      Entry:89554,
-      Exit:60742,
-      Leverage: 3,
-      DataAcquisto:"23/01/2026",
-      DataVendita:"06/02/2026"
-    }
+    // Bitcoin chiusa in perdita (leva 3x)
+    { Ticker:"BTC-USD", Name:"Bitcoin", Asset:"Crypto", Weight:1.37, Entry:89554, Exit:60742, Leverage:3, DataAcquisto:"23/01/2026", DataVendita:"06/02/2026" }
   ]
 };
 
@@ -305,45 +277,119 @@ const parseITDate = (s) => {
 const getComparable = (row, key) => {
   const v = row[key];
   if (key === 'DataAcquisto') return parseITDate(v) ?? -Infinity;
-
-  if (key === 'Weight' || key === 'NormWeight' || key === 'EffWeight' || key === 'Entry' || key === 'Current' || key === 'PnL') {
-    return Number(v);
-  }
-
+  if (['OpenWeight','PortWeight','Entry','Current','PnL'].includes(key)) return Number(v);
   return (v ?? '').toString().toLowerCase();
 };
 
 /* =========================
-   3) LOGICA CON NORMALIZZAZIONE
-   ========================= */
-function normalizeWeights() {
-  const rawSum = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0), 0);
-  const factor = rawSum > 0 ? (100 / rawSum) : 1;
+   3) PESI AUTO (APERTE + CHIUSE)
+   =========================
+   Idea:
+   - APERTE: se c'è Shares => Value = Shares*Current. Se manca Shares => usa Weight (%) come "target".
+     Ricostruisco un totale coerente: totalOpenEquity = knownValue / (1 - sumTargetMissing).
+   - CHIUSE: se c'è Shares => CostBasis = Shares*Entry. Se manca Shares => Weight (%) come "target" storico.
+     Ricostruisco totalClosedBasis allo stesso modo.
+   - PortWeight = peso sul capitale totale (OpenEquity + ClosedCostBasis).
+*/
+function deriveTotalsFromMixedInputs(rows, valueFn, targetKey='Weight') {
+  let known = 0;
+  let missingTarget = 0;
+
+  rows.forEach(r => {
+    const v = valueFn(r);
+    if (isFinite(v) && v > 0) known += v;
+    else missingTarget += (Number(r[targetKey]) || 0);
+  });
+
+  // Se tutto è "missing", non posso ricostruire: uso 100 come totale fittizio.
+  // Se missingTarget >= 100, clamp per evitare divisione per zero.
+  if (known <= 0) return { total: 100, known: 0, missingTarget: Math.min(99.999, missingTarget) };
+
+  const m = Math.min(99.999, Math.max(0, missingTarget));
+  const total = known / (1 - (m / 100));
+  return { total, known, missingTarget: m };
+}
+
+function normalizeAndCompute() {
+  // --- APERTE: Market Value ---
+  const openValueFn = (r) => {
+    const sh = Number(r.Shares);
+    const cur = Number(r.Current);
+    return (isFinite(sh) && sh > 0 && isFinite(cur) && cur > 0) ? sh * cur : NaN;
+  };
+  const openTotals = deriveTotalsFromMixedInputs(DATA.table, openValueFn, 'Weight');
+  const totalOpenEquity = openTotals.total;
 
   DATA.table.forEach(r => {
-    r.RawWeight = r.Weight;
-    r.NormWeight = r.Weight * factor;
+    const lev = Number(r.Leverage || 1);
 
-    r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1);
-    r.EffWeight = r.NormWeight * (r.Leverage || 1);
+    // MarketValue: da shares se presente, altrimenti dal target weight
+    let mv = openValueFn(r);
+    if (!isFinite(mv) || mv <= 0) {
+      const w = Number(r.Weight) || 0;
+      mv = totalOpenEquity * (w / 100);
+    }
+    r.MarketValue = mv;
+
+    // OpenWeight: sempre 100% sulle aperte (allocazione equity)
+    r.OpenWeight = totalOpenEquity > 0 ? (mv / totalOpenEquity) * 100 : 0;
+
+    // PnL
+    r.PnL = computePnL(r.Entry, r.Current, lev);
+    // Exposure sulle aperte (per chart esposizione): OpenWeight * leva
+    r.OpenEffWeight = r.OpenWeight * lev;
+  });
+
+  // --- CHIUSE: Cost Basis ---
+  const closedBasisFn = (r) => {
+    const sh = Number(r.Shares);
+    const en = Number(r.Entry);
+    return (isFinite(sh) && sh > 0 && isFinite(en) && en > 0) ? sh * en : NaN;
+  };
+  const closedTotals = deriveTotalsFromMixedInputs(DATA.closed, closedBasisFn, 'Weight');
+  const totalClosedBasis = closedTotals.total;
+
+  DATA.closed.forEach(r => {
+    const lev = Number(r.Leverage || 1);
+
+    let basis = closedBasisFn(r);
+    if (!isFinite(basis) || basis <= 0) {
+      const w = Number(r.Weight) || 0;
+      basis = totalClosedBasis * (w / 100);
+    }
+    r.CostBasis = basis;
+
+    r.PnL = computePnL(r.Entry, r.Exit, lev);
+  });
+
+  // --- PORTFOLIO TOTAL (aperte + capitale storico chiuse) ---
+  const totalCapital = totalOpenEquity + totalClosedBasis;
+
+  DATA.table.forEach(r => {
+    r.PortWeight = totalCapital > 0 ? (r.MarketValue / totalCapital) * 100 : 0;
+    const lev = Number(r.Leverage || 1);
+    r.PortEffWeight = r.PortWeight * lev;
   });
 
   DATA.closed.forEach(r => {
-    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
+    r.PortWeight = totalCapital > 0 ? (r.CostBasis / totalCapital) * 100 : 0;
   });
+
+  return { totalOpenEquity, totalClosedBasis, totalCapital };
 }
 
 function buildDerived() {
+  const totals = normalizeAndCompute();
+
   const labels = DATA.table.map(r => r.Ticker);
-  const weights = DATA.table.map(r => Number(r.NormWeight) || 0);
+  const openWeights = DATA.table.map(r => Number(r.OpenWeight) || 0);  // 100% sulle aperte
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.NormWeight)||0) * (Number(r.PnL)||0), 0) / 100;
+  // KPI: su capitale totale
+  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.PortWeight)||0) * (Number(r.PnL)||0), 0) / 100;
 
   const realizedReturn = DATA.closed.reduce((acc, r) => {
-    const tradePnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
-    const contrib = (Number(r.Weight)||0) * tradePnL / 100;
-    return acc + contrib;
+    return acc + (Number(r.PortWeight)||0) * (Number(r.PnL)||0) / 100;
   }, 0);
 
   const totalReturn = unrealizedReturn + realizedReturn;
@@ -354,28 +400,35 @@ function buildDerived() {
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
+  // Asset exposure (aperte) usando OpenEffWeight (leva)
   const assetMapExposure = new Map();
   DATA.table.forEach(r => {
     const a = r.Asset ?? '';
-    assetMapExposure.set(a, (assetMapExposure.get(a) || 0) + (Number(r.EffWeight) || 0));
+    assetMapExposure.set(a, (assetMapExposure.get(a) || 0) + (Number(r.OpenEffWeight) || 0));
   });
   const assetLabels = Array.from(assetMapExposure.keys());
   const assetWeights = assetLabels.map(a => assetMapExposure.get(a));
 
+  // Scatter: peso aperte (OpenWeight) vs PnL
   const scatterPoints = labels.map((t, i) => ({
-    x: weights[i],
+    x: openWeights[i],
     y: pnls[i],
     label: t
   }));
 
-  const contrib = labels.map((t, i) => ({ label: t, value: (weights[i] * pnls[i]) / 100 }));
-  contrib.sort((a, b) => b.value - a.value);
+  // Contrib al rendimento: su capitale totale (punti %)
+  const contrib = DATA.table.map(r => ({ label: r.Ticker, value: (Number(r.PortWeight)||0) * (Number(r.PnL)||0) / 100 }))
+    .concat(DATA.closed.map(r => ({ label: r.Ticker, value: (Number(r.PortWeight)||0) * (Number(r.PnL)||0) / 100 })));
+
+  contrib.sort((a,b)=> b.value - a.value);
 
   return {
-    labels, weights, pnls,
+    labels,
+    openWeights,
+    pnls,
     totalReturn,
     realizedReturn,
-    nPositions: DATA.table.length,
+    unrealizedReturn,
     bestTicker: best?.Ticker ?? '—',
     bestPnL: Number(best?.PnL ?? 0),
     worstTicker: worst?.Ticker ?? '—',
@@ -383,6 +436,7 @@ function buildDerived() {
     assetLabels, assetWeights,
     scatterPoints,
     contrib,
+    totals
   };
 }
 
@@ -408,7 +462,7 @@ function renderKPI(d) {
 
 const tbody = document.querySelector('#tbl tbody');
 const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
-let sortKey = 'Weight';
+let sortKey = 'OpenWeight';
 let sortDir = 'desc';
 
 function setIndicators() {
@@ -422,9 +476,8 @@ function setIndicators() {
 function renderTable() {
   tbody.innerHTML = '';
   const sorted = DATA.table.slice().sort((a, b) => {
-    const k = sortKey === 'Weight' ? 'NormWeight' : sortKey;
-    const A = getComparable(a, k);
-    const B = getComparable(b, k);
+    const A = getComparable(a, sortKey);
+    const B = getComparable(b, sortKey);
     if (A < B) return sortDir === 'asc' ? -1 : 1;
     if (A > B) return sortDir === 'asc' ? 1 : -1;
     return 0;
@@ -435,11 +488,14 @@ function renderTable() {
     const pnlVal = Number(r.PnL);
     const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
 
-    let weightHTML = `<span class="mono">${fmt(r.NormWeight)}%</span>`;
+    const lev = Number(r.Leverage || 1);
+    let weightHTML = `<span class="mono">${fmt(r.OpenWeight)}%</span>`;
+    weightHTML += `<span class="subweight">Port: ${fmt(r.PortWeight)}%</span>`;
+
     let levBadge = '';
-    if (r.Leverage && r.Leverage > 1) {
-      levBadge = `<span class="lev-badge">${r.Leverage}x</span>`;
-      weightHTML += `<span class="exposure-val">Eff: <b>${fmt(r.EffWeight)}%</b></span>`;
+    if (lev > 1) {
+      levBadge = `<span class="lev-badge">${lev}x</span>`;
+      weightHTML += `<span class="exposure-val">Eff: <b>${fmt(r.OpenEffWeight)}%</b></span>`;
     }
 
     tr.innerHTML =
@@ -465,15 +521,16 @@ function renderClosedTable() {
   DATA.closed.forEach(r => {
     const tr = document.createElement('tr');
     tr.className = 'closed-row';
-    const pnl = computePnL(r.Entry, r.Exit, r.Leverage||1);
-    const contrib = (Number(r.Weight||0) * pnl) / 100;
+
+    const pnl = Number(r.PnL || 0);
+    const contrib = (Number(r.PortWeight||0) * pnl) / 100; // punti % sul capitale totale
 
     tr.innerHTML =
       `<td class="mono">${r.Ticker}</td>` +
       `<td>${r.Name}</td>` +
       `<td><span class="tag">${r.Asset}</span></td>` +
       `<td class="mono">${r.DataVendita ?? ''}</td>` +
-      `<td class="right mono">${fmt(Number(r.Weight||0))}%</td>` +
+      `<td class="right mono">${fmt(Number(r.PortWeight||0))}%</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Exit)}</td>` +
       `<td class="right ${pnl>=0?'pos':'neg'}">${fmt(pnl)}%</td>` +
@@ -486,9 +543,8 @@ headers.forEach(th => {
   th.addEventListener('click', () => {
     const key = th.dataset.key;
     if (!key) return;
-    if (sortKey === key) {
-      sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
-    } else {
+    if (sortKey === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+    else {
       sortKey = key;
       sortDir = (key === 'Name' || key === 'Asset' || key === 'Ticker' || key === 'DataAcquisto') ? 'asc' : 'desc';
     }
@@ -519,7 +575,7 @@ function initCharts(d) {
     data: {
       labels: d.labels,
       datasets: [{
-        data: d.weights,
+        data: d.openWeights,
         backgroundColor: palette,
         borderColor: 'rgba(255,255,255,0.08)',
         borderWidth: 1
@@ -528,7 +584,7 @@ function initCharts(d) {
     options: {
       ...common,
       cutout: '58%',
-      plugins: { ...common.plugins, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed)}% (Equity)` } } }
+      plugins: { ...common.plugins, tooltip: { callbacks: { label: (c) => ` ${c.label}: ${fmt(c.parsed)}% (Aperte)` } } }
     }
   });
 
@@ -556,13 +612,13 @@ function initCharts(d) {
           callbacks: {
             label: (ctx) => {
               const p = ctx.raw;
-              return ` ${p.label} · Peso: ${fmt(p.x)}% · P&L: ${fmt(p.y)}%`;
+              return ` ${p.label} · Peso (Aperte): ${fmt(p.x)}% · P&L: ${fmt(p.y)}%`;
             }
           }
         }
       },
       scales: {
-        x: { title: { display:true, text:'Peso Equity %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
+        x: { title: { display:true, text:'Peso Equity (Aperte) %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } },
         y: { title: { display:true, text:'P&L %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
       }
     }
@@ -579,7 +635,7 @@ function initCharts(d) {
       plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` ${fmt(c.parsed.y, 2)} punti %` } } },
       scales: {
         x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
-        y: { title: { display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
+        y: { title: { display:true, text:'Punti % (capitale totale)', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
@@ -587,7 +643,7 @@ function initCharts(d) {
 
 function updateCharts(d) {
   chartAlloc.data.labels = d.labels;
-  chartAlloc.data.datasets[0].data = d.weights;
+  chartAlloc.data.datasets[0].data = d.openWeights;
 
   chartAsset.data.labels = d.assetLabels;
   chartAsset.data.datasets[0].data = d.assetWeights;
@@ -604,7 +660,6 @@ function updateCharts(d) {
 }
 
 function rebuildAll() {
-  normalizeWeights();
   const d = buildDerived();
   renderKPI(d);
   renderTable();
