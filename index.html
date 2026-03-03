@@ -207,9 +207,9 @@
    1) DATI
    ========================= */
 const DATA = {
-  asOf: "06/02/2026",
+  asOf: "03/03/2026",
 
-  // ✅ 3CP.F rimossa dalle aperte perché chiusa
+  // ✅ MIGA.SG (MicroStrategy) è APERTA (da screenshot: -0.46%, Entry 113.77, Current 113.25)
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,     DataAcquisto:"23/10/2025" },
     { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.18, DataAcquisto:"22/10/2025" },
@@ -219,7 +219,10 @@ const DATA = {
     { Ticker:"1810.HK",       Name:"Xiaomi (HK)", Asset:"Stock",  Weight:6.68,  Entry:57.90,     Current:36.24, DataAcquisto:"02/12/2025" },
     { Ticker:"MFEA.MI",       Name:"Media for Europe", Asset:"Stock",  Weight:6.22,  Entry:3.04,      Current:3.166, DataAcquisto:"01/12/2025" },
     { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57.39,    DataAcquisto:"12/12/2025" },
-    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" }
+    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" },
+
+    // 👉 aggiorna Weight quando vuoi che impatti i KPI (ora l’ho messo uguale al vecchio “slot” Xiaomi DE)
+    { Ticker:"MIGA.SG",       Name:"MicroStrategy", Asset:"Stock",  Weight:2.70, Entry:113.77,   Current:113.25, DataAcquisto:"03/03/2026", Shares:3.085856 }
   ],
 
   closed: [
@@ -244,7 +247,7 @@ const DATA = {
       DataVendita:"05/02/2026"
     },
 
-    // ✅ Xiaomi (trade chiusa da screenshot precedente)
+    // ✅ Xiaomi chiusa (trade precedente)
     {
       Ticker:"3CP.F",
       Name:"Xiaomi (Ger)",
@@ -254,20 +257,6 @@ const DATA = {
       Exit:3.365,
       DataAcquisto:"05/02/2026",
       DataVendita:"06/02/2026"
-    },
-
-    // ✅ MicroStrategy (nuova, da screenshot MIGA.SG)
-    // Nota: nello screenshot è 0.00% => metto Exit = Entry per coerenza
-    {
-      Ticker:"MIGA.SG",
-      Name:"MicroStrategy",
-      Asset:"Stock",
-      Weight:0.00,          // <-- metti il peso reale se vuoi impatti KPI
-      Entry:113.57,
-      Exit:113.57,
-      Shares:3.085059,
-      DataAcquisto:"03/03/2026",
-      DataVendita:"03/03/2026"
     },
 
     // BITCOIN CHIUSA IN PERDITA
