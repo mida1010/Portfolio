@@ -39,11 +39,11 @@
     .kpi .label{font-size:12px;color:var(--muted)}
     .kpi .value{font-size:22px;font-family:var(--mono)}
     .kpi .hint{font-size:11px;color:var(--muted); line-height:1.4}
-    
+
     .span-3{grid-column:span 3}
     .span-6{grid-column:span 6}
     .span-12{grid-column:span 12}
-    
+
     .card h2{margin:0 0 10px;font-size:14px;color:rgba(255,255,255,0.86);font-weight:650;letter-spacing:.2px}
     .chartbox{position:relative;height:320px}
     .table-wrap{max-height:420px;overflow:auto;border-radius:14px;border:1px solid var(--stroke)}
@@ -55,7 +55,7 @@
     }
     .table tbody td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;white-space:nowrap}
     .table tbody tr:hover{background:rgba(255,255,255,0.04)}
-    
+
     .closed-row { opacity: 0.6; }
     .closed-row:hover { opacity: 1; }
 
@@ -64,16 +64,12 @@
       font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid var(--stroke);
       background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block; margin-right:4px;
     }
-    
-    /* Stile speciale per evidenziare la LEVA */
+
     .lev-badge {
       font-size:10px; color: #0b1220; background:var(--lev); padding:2px 5px; border-radius:3px; font-weight:bold; vertical-align:middle; display:inline-block; margin-top:2px;
     }
     .exposure-val {
       display:block; font-size:11px; color:var(--lev); margin-top:2px; opacity:0.9;
-    }
-    .norm-val {
-      display:block; font-size:10px; color:var(--muted); margin-top:2px; font-style:italic;
     }
 
     .pos{color:var(--pos);font-family:var(--mono)}
@@ -81,11 +77,11 @@
     .realized{color:var(--realized);font-family:var(--mono);font-weight:bold;}
     .mono{font-family:var(--mono)}
     .footer{margin-top:14px;color:var(--muted);font-size:12px}
-    
+
     .table thead th.sortable{cursor:pointer;user-select:none}
     .table thead th.sortable:hover{background:rgba(255,255,255,0.06)}
     .sort-ind{opacity:.7;margin-left:6px;font-size:11px}
-    
+
     @media (max-width:980px){
       .span-3,.span-6{grid-column:span 12}
       .chartbox{height:280px}
@@ -212,7 +208,8 @@
    ========================= */
 const DATA = {
   asOf: "06/02/2026",
-  
+
+  // ✅ 3CP.F rimossa dalle aperte perché chiusa
   table: [
     { Ticker:"EMAAR.AE",      Name:"Emaar Properties", Asset:"Stock",  Weight:36.95, Entry:13.69,     Current:15,     DataAcquisto:"23/10/2025" },
     { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:11.11, Entry:0.136853,  Current:0.18, DataAcquisto:"22/10/2025" },
@@ -222,40 +219,66 @@ const DATA = {
     { Ticker:"1810.HK",       Name:"Xiaomi (HK)", Asset:"Stock",  Weight:6.68,  Entry:57.90,     Current:36.24, DataAcquisto:"02/12/2025" },
     { Ticker:"MFEA.MI",       Name:"Media for Europe", Asset:"Stock",  Weight:6.22,  Entry:3.04,      Current:3.166, DataAcquisto:"01/12/2025" },
     { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium", Asset:"ETF",    Weight:6.45,  Entry:46.9,      Current:57.39,    DataAcquisto:"12/12/2025" },
-    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" },
-    { Ticker:"3CP.DE",        Name:"Xiaomi (Ger)", Asset:"Stock",  Weight:2.70,  Entry:3.75,      Current:3.75, DataAcquisto:"05/02/2026" },
+    { Ticker:"SIDU",          Name:"Sidus Space", Asset:"Stock",  Weight:2.88,  Entry:2.58,      Current:4.31, DataAcquisto:"31/12/2025" }
   ],
 
   closed: [
-    { 
-      Ticker:"GC=F", 
-      Name:"Gold", 
-      Asset:"Futures", 
-      Weight:1.11,        
-      Entry:3990, 
-      Exit:4946,          
+    {
+      Ticker:"GC=F",
+      Name:"Gold",
+      Asset:"Futures",
+      Weight:1.11,
+      Entry:3990,
+      Exit:4946,
       DataAcquisto:"10/12/2025",
       DataVendita:"23/01/2026"
     },
-    { 
-      Ticker:"TL0.DE", 
-      Name:"Tesla", 
-      Asset:"Stock", 
-      Weight:3.11,        
-      Entry:388.78, 
-      Exit:338.35,          
+    {
+      Ticker:"TL0.DE",
+      Name:"Tesla",
+      Asset:"Stock",
+      Weight:3.11,
+      Entry:388.78,
+      Exit:338.35,
       DataAcquisto:"10/12/2025",
       DataVendita:"05/02/2026"
     },
+
+    // ✅ Xiaomi (trade chiusa da screenshot precedente)
+    {
+      Ticker:"3CP.F",
+      Name:"Xiaomi (Ger)",
+      Asset:"Stock",
+      Weight:2.70,
+      Entry:3.82,
+      Exit:3.365,
+      DataAcquisto:"05/02/2026",
+      DataVendita:"06/02/2026"
+    },
+
+    // ✅ MicroStrategy (nuova, da screenshot MIGA.SG)
+    // Nota: nello screenshot è 0.00% => metto Exit = Entry per coerenza
+    {
+      Ticker:"MIGA.SG",
+      Name:"MicroStrategy",
+      Asset:"Stock",
+      Weight:0.00,          // <-- metti il peso reale se vuoi impatti KPI
+      Entry:113.57,
+      Exit:113.57,
+      Shares:3.085059,
+      DataAcquisto:"03/03/2026",
+      DataVendita:"03/03/2026"
+    },
+
     // BITCOIN CHIUSA IN PERDITA
-    { 
-      Ticker:"BTC-USD", 
-      Name:"Bitcoin", 
-      Asset:"Crypto", 
-      Weight:1.37,      
-      Entry:89554, 
-      Exit:60742,   // Prezzo di chiusura da screenshot
-      Leverage: 3,  // Leva mantenuta dal vecchio codice (causerà un grosso drawdawn nel P&L)    
+    {
+      Ticker:"BTC-USD",
+      Name:"Bitcoin",
+      Asset:"Crypto",
+      Weight:1.37,
+      Entry:89554,
+      Exit:60742,
+      Leverage: 3,
       DataAcquisto:"23/01/2026",
       DataVendita:"06/02/2026"
     }
@@ -278,7 +301,7 @@ const fmtSmart = (x) => {
 const computePnL = (entry, current, leverage = 1) => {
   const e = Number(entry), c = Number(current);
   if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
-  return ((c - e) / e) * 100 * leverage; 
+  return ((c - e) / e) * 100 * leverage;
 };
 
 const parseITDate = (s) => {
@@ -293,48 +316,41 @@ const parseITDate = (s) => {
 const getComparable = (row, key) => {
   const v = row[key];
   if (key === 'DataAcquisto') return parseITDate(v) ?? -Infinity;
-  
+
   if (key === 'Weight' || key === 'NormWeight' || key === 'EffWeight' || key === 'Entry' || key === 'Current' || key === 'PnL') {
     return Number(v);
   }
-  
+
   return (v ?? '').toString().toLowerCase();
 };
+
 /* =========================
    3) LOGICA CON NORMALIZZAZIONE
    ========================= */
 function normalizeWeights() {
-  // 1. Calcola la somma attuale dei pesi inseriti (es. 101.26%)
   const rawSum = DATA.table.reduce((acc, r) => acc + (Number(r.Weight)||0), 0);
-  
-  // 2. Calcola il fattore di correzione se diverso da 100
   const factor = rawSum > 0 ? (100 / rawSum) : 1;
 
   DATA.table.forEach(r => {
-    r.RawWeight = r.Weight; // Salviamo il dato originale
-    r.NormWeight = r.Weight * factor; // Peso normalizzato (Equity reale in %)
-    
-    // PnL & Esposizione calcolati sul peso normalizzato per coerenza
+    r.RawWeight = r.Weight;
+    r.NormWeight = r.Weight * factor;
+
     r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1);
     r.EffWeight = r.NormWeight * (r.Leverage || 1);
   });
 
-  // Anche le chiuse le lasciamo come storiche, ma il calcolo PnL non cambia
-  DATA.closed.forEach(r => { 
-    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1); 
+  DATA.closed.forEach(r => {
+    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
   });
 }
 
 function buildDerived() {
   const labels = DATA.table.map(r => r.Ticker);
-  // Usiamo NormWeight per i grafici
-  const weights = DATA.table.map(r => Number(r.NormWeight) || 0); 
+  const weights = DATA.table.map(r => Number(r.NormWeight) || 0);
   const pnls = DATA.table.map(r => Number(r.PnL) || 0);
 
-  // Rendimento Aperte (basato su pesi ribilanciati)
   const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.NormWeight)||0) * (Number(r.PnL)||0), 0) / 100;
 
-  // Rendimento Chiuse
   const realizedReturn = DATA.closed.reduce((acc, r) => {
     const tradePnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
     const contrib = (Number(r.Weight)||0) * tradePnL / 100;
@@ -349,7 +365,6 @@ function buildDerived() {
     if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
-  // Asset allocation - BARRE (Esposizione Effettiva)
   const assetMapExposure = new Map();
   DATA.table.forEach(r => {
     const a = r.Asset ?? '';
@@ -358,19 +373,17 @@ function buildDerived() {
   const assetLabels = Array.from(assetMapExposure.keys());
   const assetWeights = assetLabels.map(a => assetMapExposure.get(a));
 
-  // Scatter
-  const scatterPoints = labels.map((t, i) => ({ 
-    x: weights[i], 
-    y: pnls[i], 
-    label: t 
+  const scatterPoints = labels.map((t, i) => ({
+    x: weights[i],
+    y: pnls[i],
+    label: t
   }));
 
-  // Contrib
   const contrib = labels.map((t, i) => ({ label: t, value: (weights[i] * pnls[i]) / 100 }));
   contrib.sort((a, b) => b.value - a.value);
 
   return {
-    labels, weights, pnls, 
+    labels, weights, pnls,
     totalReturn,
     realizedReturn,
     nPositions: DATA.table.length,
@@ -389,13 +402,17 @@ function buildDerived() {
    ========================= */
 function renderKPI(d) {
   document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf || '—'}`;
+
   const totalEl = document.getElementById('kpiTotal');
   totalEl.className = 'value ' + (d.totalReturn >= 0 ? 'pos' : 'neg');
   totalEl.textContent = fmt(d.totalReturn) + '%';
+
   const realEl = document.getElementById('kpiRealized');
-  realEl.textContent = (d.realizedReturn >= 0 ? '+' : '') + fmt(d.realizedReturn) + '%'; 
+  realEl.textContent = (d.realizedReturn >= 0 ? '+' : '') + fmt(d.realizedReturn) + '%';
+
   document.getElementById('kpiBest').textContent = d.bestTicker;
   document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(d.bestPnL)}%</span>`;
+
   document.getElementById('kpiWorst').textContent = d.worstTicker;
   document.getElementById('kpiWorstHint').innerHTML = `P&L: <span class="neg">${fmt(d.worstPnL)}%</span>`;
 }
@@ -416,7 +433,6 @@ function setIndicators() {
 function renderTable() {
   tbody.innerHTML = '';
   const sorted = DATA.table.slice().sort((a, b) => {
-    // Ordiniamo usando NormWeight così è coerente
     const k = sortKey === 'Weight' ? 'NormWeight' : sortKey;
     const A = getComparable(a, k);
     const B = getComparable(b, k);
@@ -429,12 +445,8 @@ function renderTable() {
     const tr = document.createElement('tr');
     const pnlVal = Number(r.PnL);
     const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
-    
-    // Logica visualizzazione: Mostriamo il peso normalizzato
+
     let weightHTML = `<span class="mono">${fmt(r.NormWeight)}%</span>`;
-    
-    // Se c'è differenza tra quello inserito e quello normalizzato, mostriamo un hint (opzionale)
-    // Ma qui ci interessa la Leva
     let levBadge = '';
     if (r.Leverage && r.Leverage > 1) {
       levBadge = `<span class="lev-badge">${r.Leverage}x</span>`;
@@ -465,13 +477,14 @@ function renderClosedTable() {
     const tr = document.createElement('tr');
     tr.className = 'closed-row';
     const pnl = computePnL(r.Entry, r.Exit, r.Leverage||1);
-    const contrib = (r.Weight * pnl) / 100;
-    tr.innerHTML = 
+    const contrib = (Number(r.Weight||0) * pnl) / 100;
+
+    tr.innerHTML =
       `<td class="mono">${r.Ticker}</td>` +
       `<td>${r.Name}</td>` +
       `<td><span class="tag">${r.Asset}</span></td>` +
-      `<td class="mono">${r.DataVendita}</td>` +
-      `<td class="right mono">${fmt(r.Weight)}%</td>` +
+      `<td class="mono">${r.DataVendita ?? ''}</td>` +
+      `<td class="right mono">${fmt(Number(r.Weight||0))}%</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Exit)}</td>` +
       `<td class="right ${pnl>=0?'pos':'neg'}">${fmt(pnl)}%</td>` +
@@ -517,7 +530,7 @@ function initCharts(d) {
     data: {
       labels: d.labels,
       datasets: [{
-        data: d.weights, // Usa NormWeight
+        data: d.weights,
         backgroundColor: palette,
         borderColor: 'rgba(255,255,255,0.08)',
         borderWidth: 1
@@ -577,7 +590,7 @@ function initCharts(d) {
       plugins: { ...common.plugins, legend: { display:false }, tooltip: { callbacks: { label: (c) => ` ${fmt(c.parsed.y, 2)} punti %` } } },
       scales: {
         x: { ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
-        y: { title: { display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid: { color:'rgba(255,255,255,0.08)' } }
+        y: { title: { display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks: { color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
@@ -586,9 +599,12 @@ function initCharts(d) {
 function updateCharts(d) {
   chartAlloc.data.labels = d.labels;
   chartAlloc.data.datasets[0].data = d.weights;
+
   chartAsset.data.labels = d.assetLabels;
-  chartAsset.data.datasets[0].data = d.assetWeights; 
+  chartAsset.data.datasets[0].data = d.assetWeights;
+
   chartScatter.data.datasets[0].data = d.scatterPoints;
+
   chartContrib.data.labels = d.contrib.map(x => x.label);
   chartContrib.data.datasets[0].data = d.contrib.map(x => x.value);
 
@@ -599,7 +615,7 @@ function updateCharts(d) {
 }
 
 function rebuildAll() {
-  normalizeWeights(); // Calcola i pesi corretti (somma 100%)
+  normalizeWeights();
   const d = buildDerived();
   renderKPI(d);
   renderTable();
