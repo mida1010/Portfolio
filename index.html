@@ -152,7 +152,7 @@
     </div>
 
     <div class="card span-12">
-      <h2>Posizioni Aperte (da screenshot)</h2>
+      <h2>Posizioni Aperte</h2>
       <div class="table-wrap">
         <table class="table" id="tbl">
           <thead>
@@ -171,7 +171,7 @@
         </table>
       </div>
       <div class="footer">
-        Nota: i pesi delle aperte vengono calcolati da <b>Market Value (€)</b> dello screenshot.
+        Nota: i pesi delle aperte vengono calcolati da <b>Total Cost (anonimizzato)</b> (capitale investito).
         Le chiuse mantengono il loro <b>Weight</b> invariato (peso sul capitale totale).
       </div>
     </div>
@@ -203,42 +203,42 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 /* =========================
-   1) DATI (AGGIORNATI DAI FOGLI EXCEL)
-   ========================= */
+   1) DATI (PUBBLICI/SAFE)
+   =========================
+   - NIENTE Shares
+   - NIENTE MarketValue
+   - NIENTE TotalCost
+   - Usiamo CostUnit (scala anonima) per calcolare pesi identici a quelli su Total Cost
+*/
 const DATA = {
   asOf: "04/05/2026",
 
-  // APERTE (11): dal foglio "Aperte"
+  // APERTE: CostUnit ~ TotalCost / 100 (anonimizzato)
   table: [
-    { Ticker:"MIGA.SG",       Name:"MicroStrategy",          Asset:"Stock",   Shares:3.085856,  Entry:113.77,   Current:113.80,  MarketValue:351.1704128, DataAcquisto:"03/03/2026" },
-    { Ticker:"ABEC.DE",       Name:"Alphabet (Google)",      Asset:"Stock",   Shares:2.758049,  Entry:271.88,   Current:256.55,  MarketValue:707.577599,  DataAcquisto:"05/01/2026" },
-    { Ticker:"SIDU",          Name:"Sidus Space",            Asset:"Stock",   Shares:130,       Entry:2.58,     Current:2.03,    MarketValue:263.9,        DataAcquisto:"31/12/2025" },
-    { Ticker:"6RJ0.MU",       Name:"Rocket Lab",             Asset:"Stock",   Shares:19.296236, Entry:52.28,    Current:59.00,   MarketValue:1138.477924,  DataAcquisto:"16/12/2025" },
-    { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium",     Asset:"ETF",     Shares:21.107115, Entry:46.90,    Current:56.37,   MarketValue:1189.808073,  DataAcquisto:"12/12/2025" },
-    { Ticker:"AHLA.DE",       Name:"Alibaba",                Asset:"Stock",   Shares:5.5,       Entry:134.49,   Current:117.00,  MarketValue:643.5,        DataAcquisto:"10/12/2025" },
-    { Ticker:"1810.HK",       Name:"Xiaomi (HK)",            Asset:"Stock",   Shares:244.3,     Entry:57.90,    Current:31.58,   MarketValue:848.64934,    DataAcquisto:"02/12/2025" },
-    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto",  Shares:11319,     Entry:0.136853, Current:0.10472, MarketValue:1185.32568,   DataAcquisto:"22/10/2025" },
-    { Ticker:"EMAAR.AE",      Name:"Emaar Properties",       Asset:"Stock",   Shares:1950,      Entry:13.99,    Current:15.40,   MarketValue:6906.9,       DataAcquisto:"23/10/2025" },
-    { Ticker:"GC=F",          Name:"Gold",                   Asset:"Futures", Shares:0.6199,    Entry:5162.4,   Current:5070.0,  MarketValue:2702.88798,   DataAcquisto:"03/05/2026" },
-    { Ticker:"CL=F",          Name:"Crude Oil",              Asset:"Futures", Shares:54.1,      Entry:76.158,   Current:79.09,   MarketValue:3679.74134,   DataAcquisto:"04/05/2026" }
+    { Ticker:"MIGA.SG",       Name:"MicroStrategy",          Asset:"Stock",   Entry:113.77,   Current:113.80,  CostUnit:3.5108,  DataAcquisto:"03/03/2026" },
+    { Ticker:"ABEC.DE",       Name:"Alphabet (Google)",      Asset:"Stock",   Entry:271.88,   Current:256.55,  CostUnit:7.4986,  DataAcquisto:"05/01/2026" },
+    { Ticker:"SIDU",          Name:"Sidus Space",            Asset:"Stock",   Entry:2.58,     Current:2.03,    CostUnit:3.3540,  DataAcquisto:"31/12/2025" },
+    { Ticker:"6RJ0.MU",       Name:"Rocket Lab",             Asset:"Stock",   Entry:52.28,    Current:59.00,   CostUnit:10.0881, DataAcquisto:"16/12/2025" },
+    { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium",     Asset:"ETF",     Entry:46.90,    Current:56.37,   CostUnit:9.8992,  DataAcquisto:"12/12/2025" },
+    { Ticker:"AHLA.DE",       Name:"Alibaba",                Asset:"Stock",   Entry:134.49,   Current:117.00,  CostUnit:7.3970,  DataAcquisto:"10/12/2025" },
+    { Ticker:"1810.HK",       Name:"Xiaomi (HK)",            Asset:"Stock",   Entry:57.90,    Current:31.58,   CostUnit:15.5595, DataAcquisto:"02/12/2025" },
+    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto",  Entry:0.136853, Current:0.10472, CostUnit:15.4904, DataAcquisto:"22/10/2025" },
+    { Ticker:"EMAAR.AE",      Name:"Emaar Properties",       Asset:"Stock",   Entry:13.99,    Current:15.40,   CostUnit:62.7452, DataAcquisto:"23/10/2025" },
+    { Ticker:"GC=F",          Name:"Gold",                   Asset:"Futures", Entry:5162.40,  Current:5070.00, CostUnit:27.5215, DataAcquisto:"03/05/2026" },
+    { Ticker:"CL=F",          Name:"Crude Oil",              Asset:"Futures", Entry:76.16,    Current:79.09,   CostUnit:35.4333, DataAcquisto:"04/05/2026" }
   ],
 
-  // CHIUSE (7): dal foglio "Chiuse"
-  // IMPORTANTISSIMO: Weight qui è in % (quindi 0.0111 -> 1.11)
+  // CHIUSE: i pesi NON si toccano (già % sul capitale totale)
   closed: [
     { Ticker:"GC=F",    Name:"Gold",               Asset:"Futures", Weight:1.11,  Entry:3990,    Exit:4946,    DataAcquisto:"10/12/2025", DataVendita:"23/01/2026" },
     { Ticker:"TL0.DE",  Name:"Tesla",              Asset:"Stock",   Weight:3.11,  Entry:388.78,  Exit:338.35,  DataAcquisto:"10/12/2025", DataVendita:"05/02/2026" },
     { Ticker:"3CP.F",   Name:"Xiaomi (Ger)",       Asset:"Stock",   Weight:2.70,  Entry:3.82,    Exit:3.365,   DataAcquisto:"05/02/2026", DataVendita:"06/02/2026" },
     { Ticker:"BTC-USD", Name:"Bitcoin",            Asset:"Crypto",  Weight:1.37,  Entry:89554,   Exit:60742,   Leverage:3,       DataAcquisto:"23/01/2026", DataVendita:"06/02/2026" },
     { Ticker:"ABEC.DE", Name:"Google",             Asset:"Stock",   Weight:4.46,  Entry:271.88,  Exit:260.35,  DataAcquisto:"05/01/2026", DataVendita:"03/05/2026" },
-    { Ticker:"AHLA.DE", Name:"Alibaba",            Asset:"Stock",   Weight:4.055, Entry:134.49,  Exit:111.6,   DataAcquisto:"10/12/2025", DataVendita:"03/05/2026" },
+    { Ticker:"AHLA.DE", Name:"Alibaba",            Asset:"Stock",   Weight:4.055, Entry:134.49,  Exit:111.60,  DataAcquisto:"10/12/2025", DataVendita:"03/05/2026" },
     { Ticker:"MFEA.MI", Name:"Media for Europe",   Asset:"Stock",   Weight:6.09,  Entry:3.04,    Exit:2.956,   DataAcquisto:"01/12/2025", DataVendita:"03/05/2026" }
   ]
 };
-</script>
-
-<script>
-/* ========== Il resto del tuo script rimane identico; lo reinietto qui per completezza ========== */
 
 /* =========================
    2) UTIL
@@ -276,14 +276,14 @@ const getComparable = (row, key) => {
 };
 
 /* =========================
-   3) PESI (COME HAI CHIESTO)
+   3) PESI
    =========================
-   - OpenWeight: calcolato SOLO da MarketValue (screenshot) -> somma = 100% sulle aperte.
-   - Closed Weight: NON modificato (peso su capitale totale).
-   - TotalCapital ricavato imponendo che: OpenMarketSum = TotalCapital * (1 - SumClosedWeight/100)
+   - OpenWeight calcolato su CostUnit (≈ Total Cost, ma anonimizzato)
+   - Closed Weight invariato (peso su capitale totale)
+   - totalCapital ricavato imponendo coerenza tra openSum e closedWeightSum
 */
 function computeWeightsAndPnL(){
-  const openSum = DATA.table.reduce((acc,r)=> acc + (Number(r.MarketValue)||0), 0);
+  const openSum = DATA.table.reduce((acc,r)=> acc + (Number(r.CostUnit)||0), 0);
 
   const closedWeightSum = DATA.closed.reduce((acc,r)=> acc + (Number(r.Weight)||0), 0);
   const clampClosed = Math.min(99.999, Math.max(0, closedWeightSum));
@@ -291,14 +291,16 @@ function computeWeightsAndPnL(){
 
   DATA.table.forEach(r=>{
     const lev = Number(r.Leverage||1);
-    r.OpenWeight = openSum>0 ? (Number(r.MarketValue)||0) / openSum * 100 : 0;      // 100% sulle aperte
-    r.PortWeight = totalCapital>0 ? (Number(r.MarketValue)||0) / totalCapital * 100 : 0; // sul totale capitale
+    const cost = Number(r.CostUnit)||0;
+
+    r.OpenWeight = openSum>0 ? cost / openSum * 100 : 0;           // 100% sulle aperte
+    r.PortWeight = totalCapital>0 ? cost / totalCapital * 100 : 0; // sul totale capitale
     r.PnL = computePnL(r.Entry, r.Current, lev);
     r.OpenEffWeight = r.OpenWeight * lev;
   });
 
   DATA.closed.forEach(r=>{
-    r.PortWeight = Number(r.Weight)||0; // invariato come richiesto
+    r.PortWeight = Number(r.Weight)||0;
     r.PnL = computePnL(r.Entry, r.Exit, r.Leverage||1);
   });
 
@@ -308,7 +310,6 @@ function computeWeightsAndPnL(){
 function buildDerived(){
   const totals = computeWeightsAndPnL();
 
-  // KPI su capitale totale (usiamo PortWeight)
   const unrealizedReturn = DATA.table.reduce((acc,r)=> acc + (Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100, 0);
   const realizedReturn  = DATA.closed.reduce((acc,r)=> acc + (Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100, 0);
   const totalReturn = unrealizedReturn + realizedReturn;
@@ -319,7 +320,6 @@ function buildDerived(){
     if(!worst|| Number(r.PnL)<Number(worst.PnL)) worst=r;
   });
 
-  // Asset exposure sulle aperte (OpenEffWeight)
   const assetMap = new Map();
   DATA.table.forEach(r=>{
     const a = r.Asset ?? '';
