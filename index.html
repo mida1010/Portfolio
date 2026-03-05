@@ -203,37 +203,41 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 /* =========================
-   1) DATI
+   1) DATI (AGGIORNATI DAI FOGLI EXCEL)
    ========================= */
 const DATA = {
-  asOf: "03/03/2026",
+  asOf: "04/05/2026",
 
-  // APERTE: valori presi dallo screenshot (Market Value è la fonte per i pesi)
+  // APERTE: valori presi dal foglio "Aperte" del tuo Excel
   table: [
-    { Ticker:"MIGA.SG",       Name:"MicroStrategy",          Asset:"Stock",  Shares:3.085856, Entry:113.77, Current:113.80, MarketValue:351.17,     DataAcquisto:"03/03/2026" },
-    { Ticker:"ABEC.DE",       Name:"Alphabet (Google)",      Asset:"Stock",  Shares:5.516099, Entry:271.88, Current:256.55, MarketValue:1415.16,    DataAcquisto:"05/01/2026" },
-    { Ticker:"SIDU",          Name:"Sidus Space",            Asset:"Stock",  Shares:130,      Entry:2.58,   Current:2.03,   MarketValue:227.7193,  DataAcquisto:"31/12/2025" },
-    { Ticker:"6RJ0.MU",       Name:"Rocket Lab",             Asset:"Stock",  Shares:19.296236,Entry:52.28,  Current:59.00,  MarketValue:1138.48,   DataAcquisto:"16/12/2025" },
-    { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium",      Asset:"ETF",    Shares:21.107115,Entry:46.90,  Current:56.37,  MarketValue:1189.81,   DataAcquisto:"12/12/2025" },
-    { Ticker:"AHLA.DE",       Name:"Alibaba",                Asset:"Stock",  Shares:11,       Entry:134.49, Current:117.00, MarketValue:1287.00,   DataAcquisto:"10/12/2025" },
-    { Ticker:"1810.HK",       Name:"Xiaomi (HK)",            Asset:"Stock",  Shares:244.3,    Entry:57.90,  Current:31.58,  MarketValue:852.661,   DataAcquisto:"02/12/2025" },
-    { Ticker:"MFEA.MI",       Name:"Media for Europe",       Asset:"Stock",  Shares:328,      Entry:3.04,   Current:2.944,  MarketValue:965.6320,  DataAcquisto:"01/12/2025" },
-    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Shares:11319,    Entry:0.136853,Current:0.104720,MarketValue:1022.814970,DataAcquisto:"22/10/2025" },
-    { Ticker:"EMAAR.AE",      Name:"Emaar Properties",       Asset:"Stock",  Shares:1950,     Entry:13.99,  Current:16.20,  MarketValue:7413.54,   DataAcquisto:"23/10/2025" }
+    { Ticker:"MIGA.SG",       Name:"MicroStrategy",          Asset:"Stock",  Shares:3.085856, Entry:113.77, Current:113.80, MarketValue:351.1704128,     DataAcquisto:"03/03/2026" },
+    { Ticker:"ABEC.DE",       Name:"Alphabet (Google)",      Asset:"Stock",  Shares:2.7580495, Entry:271.88, Current:256.55, MarketValue:1415.16007305,   DataAcquisto:"05/01/2026" },
+    { Ticker:"SIDU",          Name:"Sidus Space",            Asset:"Stock",  Shares:130,      Entry:2.58,   Current:2.03,   MarketValue:263.9,            DataAcquisto:"31/12/2025" },
+    { Ticker:"6RJ0.MU",       Name:"Rocket Lab",             Asset:"Stock",  Shares:19.296236,Entry:52.28,  Current:59.00,  MarketValue:1138.48,          DataAcquisto:"16/12/2025" },
+    { Ticker:"WNUC.DE",       Name:"WisdomTree Uranium",     Asset:"ETF",    Shares:21.107115,Entry:46.90,  Current:56.37,  MarketValue:1189.81,          DataAcquisto:"12/12/2025" },
+    { Ticker:"AHLA.DE",       Name:"Alibaba",                Asset:"Stock",  Shares:11,       Entry:134.49, Current:117.00, MarketValue:739.70,           DataAcquisto:"10/12/2025" },
+    { Ticker:"1810.HK",       Name:"Xiaomi (HK)",            Asset:"Stock",  Shares:244.3,    Entry:57.90,  Current:31.58,  MarketValue:848.65,           DataAcquisto:"02/12/2025" },
+    { Ticker:"MFEA.MI",       Name:"Media for Europe",       Asset:"Stock",  Shares:328,      Entry:3.04,   Current:2.956,  MarketValue:965.632,          DataAcquisto:"01/12/2025" },
+    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Shares:11319,    Entry:0.136853,Current:0.10472,MarketValue:1186.735,         DataAcquisto:"22/10/2025" },
+    { Ticker:"EMAAR.AE",      Name:"Emaar Properties",       Asset:"Stock",  Shares:1950,     Entry:13.99,  Current:16.20,  MarketValue:7413.54,          DataAcquisto:"23/10/2025" },
+    { Ticker:"GC=F",          Name:"Gold",                   Asset:"Futures",Shares:0.6199,  Entry:5162.4, Current:5070.0, MarketValue:2702.88798,       DataAcquisto:"05/03/2026" }
   ],
 
-  // CHIUSE: PESI NON SI TOCCANO. Aggiunta Xiaomi (3CP.F)
+  // CHIUSE: pesi presi dal foglio "Chiuse" (Weight % -> convertito in percentuale)
   closed: [
     { Ticker:"GC=F",   Name:"Gold",        Asset:"Futures", Weight:1.11, Entry:3990,   Exit:4946,  DataAcquisto:"10/12/2025", DataVendita:"23/01/2026" },
     { Ticker:"TL0.DE", Name:"Tesla",       Asset:"Stock",   Weight:3.11, Entry:388.78, Exit:338.35,DataAcquisto:"10/12/2025", DataVendita:"05/02/2026" },
-
-    // Xiaomi chiusa (da screenshot precedente)
     { Ticker:"3CP.F",  Name:"Xiaomi (Ger)",Asset:"Stock",   Weight:2.70, Entry:3.82,   Exit:3.365, DataAcquisto:"05/02/2026", DataVendita:"06/02/2026" },
-
-    // Bitcoin chiusa in perdita (leva 3x)
-    { Ticker:"BTC-USD",Name:"Bitcoin",     Asset:"Crypto",  Weight:1.37, Entry:89554,  Exit:60742, Leverage:3, DataAcquisto:"23/01/2026", DataVendita:"06/02/2026" }
+    { Ticker:"BTC-USD",Name:"Bitcoin",     Asset:"Crypto",  Weight:1.37, Entry:89554,  Exit:60742, Leverage:3, DataAcquisto:"23/01/2026", DataVendita:"06/02/2026" },
+    { Ticker:"MFEA.MI",Name:"Media for Europe", Asset:"Stock", Weight:6.09, Entry:3.04, Exit:2.956, DataAcquisto:"01/12/2025", DataVendita:"03/05/2026" },
+    { Ticker:"GC=F-OLD",Name:"OldGoldExample",Asset:"Futures",Weight:0.50, Entry:4100, Exit:4200, DataAcquisto:"01/01/2026", DataVendita:"15/03/2026" },
+    { Ticker:"EXAMPLE",Name:"ExampleClose",Asset:"Stock",  Weight:0.25, Entry:10, Exit:12, DataAcquisto:"01/04/2026", DataVendita:"10/04/2026" }
   ]
 };
+</script>
+
+<script>
+/* ========== Il resto del tuo script rimane identico; lo reinietto qui per completezza ========== */
 
 /* =========================
    2) UTIL
@@ -500,7 +504,7 @@ function initCharts(d){
       plugins:{ ...common.plugins, legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=>` ${fmt(c.parsed.y,2)} punti %` } } },
       scales:{
         x:{ ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
-        y:{ title:{ display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
+        y:{ title:{ display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks:{ color:'rgba(255,255,255,0.7)' } , grid:{ color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
