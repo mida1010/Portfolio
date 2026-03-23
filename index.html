@@ -39,11 +39,9 @@
     .kpi .label{font-size:12px;color:var(--muted)}
     .kpi .value{font-size:22px;font-family:var(--mono)}
     .kpi .hint{font-size:11px;color:var(--muted); line-height:1.4}
-
     .span-3{grid-column:span 3}
     .span-6{grid-column:span 6}
     .span-12{grid-column:span 12}
-
     .card h2{margin:0 0 10px;font-size:14px;color:rgba(255,255,255,0.86);font-weight:650;letter-spacing:.2px}
     .chartbox{position:relative;height:320px}
     .table-wrap{max-height:420px;overflow:auto;border-radius:14px;border:1px solid var(--stroke)}
@@ -55,33 +53,21 @@
     }
     .table tbody td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;white-space:nowrap}
     .table tbody tr:hover{background:rgba(255,255,255,0.04)}
-
-    .closed-row { opacity: 0.6; }
+    .closed-row { opacity: 0.75; }
     .closed-row:hover { opacity: 1; }
-
     .right{text-align:right}
     .tag{
       font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid var(--stroke);
       background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.78);display:inline-block; margin-right:4px;
     }
-
-    .lev-badge {
-      font-size:10px; color: #0b1220; background:var(--lev); padding:2px 5px; border-radius:3px; font-weight:bold;
-      vertical-align:middle; display:inline-block; margin-top:2px;
-    }
-    .exposure-val { display:block; font-size:11px; color:var(--lev); margin-top:2px; opacity:0.9; }
     .subval { display:block; font-size:10px; color:var(--muted); margin-top:2px; }
-
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
     .realized{color:var(--realized);font-family:var(--mono);font-weight:bold;}
     .mono{font-family:var(--mono)}
-    .footer{margin-top:14px;color:var(--muted);font-size:12px}
-
     .table thead th.sortable{cursor:pointer;user-select:none}
     .table thead th.sortable:hover{background:rgba(255,255,255,0.06)}
     .sort-ind{opacity:.7;margin-left:6px;font-size:11px}
-
     @media (max-width:980px){
       .span-3,.span-6{grid-column:span 12}
       .chartbox{height:280px}
@@ -89,7 +75,6 @@
     }
   </style>
 </head>
-
 <body>
 <div class="wrap">
   <header>
@@ -106,15 +91,15 @@
 
   <section class="grid" style="margin-bottom:14px;">
     <div class="card span-3 kpi">
-      <div class="label">Rendimento Totale (Netto)</div>
+      <div class="label">Rendimento Totale</div>
       <div class="value" id="kpiTotal">—</div>
-      <div class="hint">P&L Aperto + P&L Chiuso (su capitale totale)</div>
+      <div class="hint">P&L aperto + chiuso su capitale di riferimento corrente</div>
     </div>
 
     <div class="card span-3 kpi" style="border:1px solid rgba(125, 211, 252, 0.3);">
-      <div class="label" style="color:var(--realized)">Profitto Realizzato (Incassato)</div>
+      <div class="label" style="color:var(--realized)">Profitto Realizzato</div>
       <div class="value realized" id="kpiRealized">—</div>
-      <div class="hint" style="color:#a0e0ff;">solo trade chiuse, su capitale totale</div>
+      <div class="hint" style="color:#a0e0ff;">solo trade chiuse</div>
     </div>
 
     <div class="card span-3 kpi">
@@ -137,7 +122,7 @@
     </div>
 
     <div class="card span-6">
-      <h2>Esposizione Asset (Aperte · con Leva)</h2>
+      <h2>Esposizione per Asset (Aperte)</h2>
       <div class="chartbox"><canvas id="chartAsset"></canvas></div>
     </div>
 
@@ -147,7 +132,7 @@
     </div>
 
     <div class="card span-6">
-      <h2>Contributo al Rendimento (punti % · capitale totale)</h2>
+      <h2>Contributo al Rendimento (punti %)</h2>
       <div class="chartbox"><canvas id="chartContrib"></canvas></div>
     </div>
 
@@ -178,7 +163,7 @@
         <table class="table" id="tblClosed">
           <thead>
             <tr>
-              <th>Ticker</th>
+              <th class="sortable" data-key="Ticker">Ticker</th>
               <th>Nome</th>
               <th>Asset</th>
               <th>Data Vendita</th>
@@ -186,7 +171,7 @@
               <th class="right">Entry</th>
               <th class="right">Exit</th>
               <th class="right">P&L Trade</th>
-              <th class="right">Contributo Totale</th>
+              <th class="right">Contributo</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -198,49 +183,300 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-/* =========================
-   1) DATI (PUBBLICI/SAFE)
-   =========================
-   - NIENTE Shares
-   - NIENTE MarketValue
-   - NIENTE TotalCost
-   - Usiamo CostUnit (scala anonima) per calcolare pesi identici a quelli su Total Cost
-*/
 const DATA = {
-  asOf: "04/05/2026",
-
-  // APERTE: CostUnit ~ TotalCost / 100 (anonimizzato)
- table: [
-  { Ticker:"MIGA.SG",   Name:"MicroStrategy",     Asset:"Stock", Entry:113.77,   Current:115.55, CostUnit:3.5108,  DataAcquisto:"03/03/2026" },
-  { Ticker:"ABEC.DE",   Name:"Alphabet (Google)", Asset:"Stock", Entry:271.88,   Current:258.50, CostUnit:7.4986,  DataAcquisto:"05/01/2026" },
-  { Ticker:"SIDU",      Name:"Sidus Space",       Asset:"Stock", Entry:2.58,     Current:2.00,   CostUnit:3.3540,  DataAcquisto:"31/12/2025" },
-  { Ticker:"6RJ0.MU",   Name:"Rocket Lab",        Asset:"Stock", Entry:52.28,    Current:60.50,  CostUnit:10.0881, DataAcquisto:"16/12/2025" },
-  { Ticker:"WNUC.DE",   Name:"WisdomTree Uranium",Asset:"ETF",   Entry:46.90,    Current:53.90,  CostUnit:9.8992,  DataAcquisto:"12/12/2025" },
-  { Ticker:"AHLA.DE",   Name:"Alibaba",           Asset:"Stock", Entry:134.49,   Current:113.40, CostUnit:7.3970,  DataAcquisto:"10/12/2025" },
-  { Ticker:"1810.HK",   Name:"Xiaomi (HK)",       Asset:"Stock", Entry:57.90,    Current:33.42,  CostUnit:15.5595, DataAcquisto:"02/12/2025" },
-  { Ticker:"EMAAR.AE",  Name:"Emaar Properties",  Asset:"Stock", Entry:13.99,    Current:13.95,  CostUnit:62.7452, DataAcquisto:"23/10/2025" },
-  { Ticker:"GC=F", Name:"Gold", Asset:"Futures", Entry:5128.60, Current:5172.00, CostUnit:69.6874, DataAcquisto:"05/03/2026" },
-  { Ticker:"NG=F", Name:"Natural Gas", Asset:"Futures", Entry:3.0650, Current:3.3360, CostUnit:26.2483, DataAcquisto:"05/03/2026" }
-],
-  // CHIUSE: i pesi NON si toccano (già % sul capitale totale)
-  closed: [
-    { Ticker:"GC=F",    Name:"Gold",               Asset:"Futures", Weight:1.11,  Entry:3990,    Exit:4946,    DataAcquisto:"10/12/2025", DataVendita:"23/01/2026" },
-    { Ticker:"TL0.DE",  Name:"Tesla",              Asset:"Stock",   Weight:3.11,  Entry:388.78,  Exit:338.35,  DataAcquisto:"10/12/2025", DataVendita:"05/02/2026" },
-    { Ticker:"3CP.F",   Name:"Xiaomi (Ger)",       Asset:"Stock",   Weight:2.70,  Entry:3.82,    Exit:3.365,   DataAcquisto:"05/02/2026", DataVendita:"06/02/2026" },
-    { Ticker:"BTC-USD", Name:"Bitcoin",            Asset:"Crypto",  Weight:1.37,  Entry:89554,   Exit:60742,   Leverage:3,       DataAcquisto:"23/01/2026", DataVendita:"06/02/2026" },
-    { Ticker:"ABEC.DE", Name:"Google",             Asset:"Stock",   Weight:4.46,  Entry:271.88,  Exit:260.35,  DataAcquisto:"05/01/2026", DataVendita:"03/05/2026" },
-    { Ticker:"AHLA.DE", Name:"Alibaba",            Asset:"Stock",   Weight:4.055, Entry:134.49,  Exit:111.60,  DataAcquisto:"10/12/2025", DataVendita:"03/05/2026" },
-    { Ticker:"MFEA.MI", Name:"Media for Europe",   Asset:"Stock",   Weight:6.09,  Entry:3.04,    Exit:2.956,   DataAcquisto:"01/12/2025", DataVendita:"03/05/2026" }, 
-    { Ticker:"WLFI33251-USD", Name:"World Libery Financial", Asset:"Crypto", Weight:7.80, Entry:0.136853, Exit:0.1014, DataAcquisto:"22/10/2025", DataVendita:"06/03/2026" },
-    { Ticker:"CL=F",      Name:"Crude Oil",         Asset:"Futures",   Weight:18.58,   Entry:76.16,    Exit:88.34,   DataAcquisto:"05/03/2026",   DataVendita:"06/03/2026" }
+  "asOf": "23/03/2026",
+  "table": [
+    {
+      "Ticker": "MIGA.SG",
+      "Name": "MicroStrategy",
+      "Asset": "Stock",
+      "Entry": 113.77,
+      "Current": 124.35,
+      "Capital": 351.077837,
+      "PnLEUR": 32.648356,
+      "DataAcquisto": "03/03/2026"
+    },
+    {
+      "Ticker": "ABEC.DE",
+      "Name": "Alphabet (Google)",
+      "Asset": "Stock",
+      "Entry": 271.88,
+      "Current": 265.95,
+      "Capital": 749.858498,
+      "PnLEUR": -16.355234,
+      "DataAcquisto": "05/01/2026"
+    },
+    {
+      "Ticker": "SIDU",
+      "Name": "Sidus Space",
+      "Asset": "Stock",
+      "Entry": 2.58,
+      "Current": 2.17,
+      "Capital": 335.4,
+      "PnLEUR": -45.948276,
+      "DataAcquisto": "31/12/2025"
+    },
+    {
+      "Ticker": "6RJ0.MU",
+      "Name": "Rocket Lab",
+      "Asset": "Stock",
+      "Entry": 52.28,
+      "Current": 60.5,
+      "Capital": 1008.807218,
+      "PnLEUR": 158.61506,
+      "DataAcquisto": "16/12/2025"
+    },
+    {
+      "Ticker": "WNUC.DE",
+      "Name": "WisdomTree Uranium",
+      "Asset": "Etf",
+      "Entry": 46.9,
+      "Current": 54.8,
+      "Capital": 989.923694,
+      "PnLEUR": 166.746208,
+      "DataAcquisto": "12/12/2025"
+    },
+    {
+      "Ticker": "1810.HK",
+      "Name": "Xiaomi (HK)",
+      "Asset": "Stock",
+      "Entry": 57.9,
+      "Current": 33.32,
+      "Capital": 1555.9467,
+      "PnLEUR": -660.53834,
+      "DataAcquisto": "02/12/2025"
+    },
+    {
+      "Ticker": "CL=F",
+      "Name": "Crude Oil",
+      "Asset": "Futures",
+      "Entry": 86.905,
+      "Current": 94.0,
+      "Capital": 9724.947596,
+      "PnLEUR": 793.953204,
+      "DataAcquisto": "03/10/2026"
+    },
+    {
+      "Ticker": "NG=F",
+      "Name": "natural gas",
+      "Asset": "Futures",
+      "Entry": 2.9586,
+      "Current": 3.0998,
+      "Capital": 3998.25204,
+      "PnLEUR": 190.81768,
+      "DataAcquisto": "18/03/2026"
+    },
+    {
+      "Ticker": "BRENT",
+      "Name": "brent oil",
+      "Asset": "Futures",
+      "Entry": 96.417,
+      "Current": 108.16,
+      "Capital": 4112.18505,
+      "PnLEUR": 500.83895,
+      "DataAcquisto": "18/03/2026"
+    }
+  ],
+  "closed": [
+    {
+      "Ticker": "GC=F",
+      "Name": "Gold",
+      "Asset": "Futures",
+      "Entry": 3990.0,
+      "Exit": 4946.0,
+      "Weight": 1.11,
+      "Capital": 192.007697,
+      "PnLEUR": 46.004852,
+      "Leverage": 1.0,
+      "DataAcquisto": "10/12/2025",
+      "DataVendita": "23/01/2026"
+    },
+    {
+      "Ticker": "TL0.DE",
+      "Name": "Tesla",
+      "Asset": "Stock",
+      "Entry": 388.78,
+      "Exit": 338.35,
+      "Weight": 3.11,
+      "Capital": 537.967511,
+      "PnLEUR": -69.781629,
+      "Leverage": 1.0,
+      "DataAcquisto": "10/12/2025",
+      "DataVendita": "05/02/2026"
+    },
+    {
+      "Ticker": "3CP.F",
+      "Name": "Xiaomi (Ger)",
+      "Asset": "Stock",
+      "Entry": 3.82,
+      "Exit": 3.365,
+      "Weight": 2.7,
+      "Capital": 467.045749,
+      "PnLEUR": -55.629795,
+      "Leverage": 1.0,
+      "DataAcquisto": "05/02/2026",
+      "DataVendita": "06/02/2026"
+    },
+    {
+      "Ticker": "BTC-USD",
+      "Name": "Bitcoin",
+      "Asset": "Crypto",
+      "Entry": 89554.0,
+      "Exit": 60742.0,
+      "Weight": 1.37,
+      "Capital": 236.982473,
+      "PnLEUR": -228.731458,
+      "Leverage": 3.0,
+      "DataAcquisto": "23/01/2026",
+      "DataVendita": "06/02/2026"
+    },
+    {
+      "Ticker": "ABEC.DE",
+      "Name": "Google",
+      "Asset": "Stock",
+      "Entry": 271.88,
+      "Exit": 260.35,
+      "Weight": 4.46,
+      "Capital": 717.06,
+      "PnLEUR": -30.409378,
+      "Leverage": 1.0,
+      "DataAcquisto": "05/01/2026",
+      "DataVendita": "03/05/2026"
+    },
+    {
+      "Ticker": "AHLA.DE",
+      "Name": "Alibaba",
+      "Asset": "Stock",
+      "Entry": 134.49,
+      "Exit": 111.6,
+      "Weight": 4.055,
+      "Capital": 739.695,
+      "PnLEUR": -125.895,
+      "Leverage": 1.0,
+      "DataAcquisto": "10/12/2025",
+      "DataVendita": "03/05/2026"
+    },
+    {
+      "Ticker": "MFEA.MI",
+      "Name": "Media for Europe",
+      "Asset": "Stock",
+      "Entry": 3.04,
+      "Exit": 2.956,
+      "Weight": 6.09,
+      "Capital": 997.12,
+      "PnLEUR": -27.552,
+      "Leverage": 1.0,
+      "DataAcquisto": "01/12/2025",
+      "DataVendita": "03/05/2026"
+    },
+    {
+      "Ticker": "WLFI33251-USD",
+      "Name": "World Libery Financial",
+      "Asset": "Crypto",
+      "Entry": 0.136853,
+      "Exit": 0.1014,
+      "Weight": 7.8,
+      "Capital": 1328.878212,
+      "PnLEUR": -344.257848,
+      "Leverage": 1.0,
+      "DataAcquisto": "22/10/2025",
+      "DataVendita": "03/06/2026"
+    },
+    {
+      "Ticker": "CL=F",
+      "Name": "Crude Oil",
+      "Asset": "Futures",
+      "Entry": 76.158,
+      "Exit": 88.337,
+      "Weight": 18.58,
+      "Capital": 3543.327108,
+      "PnLEUR": 566.640154,
+      "Leverage": 7.0,
+      "DataAcquisto": "03/05/2026",
+      "DataVendita": "03/06/2026"
+    },
+    {
+      "Ticker": "NG=F",
+      "Name": "Natural Gas",
+      "Asset": "Futures",
+      "Entry": 3.065,
+      "Exit": 3.1902,
+      "Weight": 12.5,
+      "Capital": 2624.82922,
+      "PnLEUR": 107.219778,
+      "Leverage": 1,
+      "DataAcquisto": "03/05/2026",
+      "DataVendita": "03/09/2026"
+    },
+    {
+      "Ticker": "CL=F",
+      "Name": "Crude Oil",
+      "Asset": "Futures",
+      "Entry": null,
+      "Exit": null,
+      "Weight": null,
+      "Capital": null,
+      "PnLEUR": -839.36,
+      "Leverage": 1,
+      "DataAcquisto": "03/09/2026",
+      "DataVendita": "03/09/2026"
+    },
+    {
+      "Ticker": "GC=F",
+      "Name": "Gold",
+      "Asset": "Futures",
+      "Entry": 5128.6,
+      "Exit": 5126.0,
+      "Weight": null,
+      "Capital": 6990.79466,
+      "PnLEUR": -3.54406,
+      "Leverage": 1,
+      "DataAcquisto": "03/05/2026",
+      "DataVendita": "03/09/2026"
+    },
+    {
+      "Ticker": "NG=F",
+      "Name": "Natural Gas",
+      "Asset": "Futures",
+      "Entry": null,
+      "Exit": null,
+      "Weight": null,
+      "Capital": null,
+      "PnLEUR": -275.2,
+      "Leverage": 1,
+      "DataAcquisto": "",
+      "DataVendita": "03/09/2026"
+    },
+    {
+      "Ticker": "EMAAR.AE",
+      "Name": "Emaar Properties",
+      "Asset": "Stock",
+      "Entry": 13.99,
+      "Exit": 11.15,
+      "Weight": 29.05,
+      "Capital": 27280.5,
+      "PnLEUR": -5538.0,
+      "Leverage": 1.0,
+      "DataAcquisto": "23/10/2025",
+      "DataVendita": "13/03/2026"
+    },
+    {
+      "Ticker": "AHLA.DE",
+      "Name": "Alibaba",
+      "Asset": "Stock",
+      "Entry": 134.49,
+      "Exit": 105.6,
+      "Weight": 3.42,
+      "Capital": 739.695,
+      "PnLEUR": -158.895,
+      "Leverage": 1,
+      "DataAcquisto": "10/12/2025",
+      "DataVendita": "23/03/2026"
+    }
   ]
 };
 
-/* =========================
-   2) UTIL
-   ========================= */
 const fmt = (x, d=2) => Number(x).toLocaleString('it-IT', { minimumFractionDigits:d, maximumFractionDigits:d });
-
 const fmtSmart = (x) => {
   const n = Number(x);
   if (!isFinite(n)) return '';
@@ -248,205 +484,174 @@ const fmtSmart = (x) => {
   if (a !== 0 && a < 1) return n.toLocaleString('it-IT', { minimumFractionDigits: 3, maximumFractionDigits: 6 });
   return n.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
-
-const computePnL = (entry, current, leverage = 1) => {
-  const e = Number(entry), c = Number(current);
-  if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
-  return ((c - e) / e) * 100 * leverage;
-};
-
 const parseITDate = (s) => {
   if (!s) return null;
   const parts = String(s).split('/');
   if (parts.length !== 3) return null;
-  const [dd, mm, yyyy] = parts.map(x => parseInt(x, 10));
+  let [dd, mm, yyyy] = parts.map(x => parseInt(x, 10));
+  if (yyyy < 100) yyyy += 2000;
   if (!dd || !mm || !yyyy) return null;
   return new Date(yyyy, mm - 1, dd).getTime();
 };
-
 const getComparable = (row, key) => {
   const v = row[key];
-  if (key === 'DataAcquisto') return parseITDate(v) ?? -Infinity;
-  if (['OpenWeight','Entry','Current','PnL'].includes(key)) return Number(v);
+  if (key === 'DataAcquisto' || key === 'DataVendita') return parseITDate(v) ?? -Infinity;
+  if (['OpenWeight','Entry','Current','PnL','PortWeight'].includes(key)) return Number(v);
   return (v ?? '').toString().toLowerCase();
 };
-
-/* =========================
-   3) PESI
-   =========================
-   - OpenWeight calcolato su CostUnit (≈ Total Cost, ma anonimizzato)
-   - Closed Weight invariato (peso su capitale totale)
-   - totalCapital ricavato imponendo coerenza tra openSum e closedWeightSum
-*/
-function computeWeightsAndPnL(){
-  const openSum = DATA.table.reduce((acc,r)=> acc + (Number(r.CostUnit)||0), 0);
-
-  const closedWeightSum = DATA.closed.reduce((acc,r)=> acc + (Number(r.Weight)||0), 0);
-  const clampClosed = Math.min(99.999, Math.max(0, closedWeightSum));
-  const totalCapital = (openSum > 0) ? (openSum / (1 - clampClosed/100)) : 0;
-
-  DATA.table.forEach(r=>{
-    const lev = Number(r.Leverage||1);
-    const cost = Number(r.CostUnit)||0;
-
-    r.OpenWeight = openSum>0 ? cost / openSum * 100 : 0;           // 100% sulle aperte
-    r.PortWeight = totalCapital>0 ? cost / totalCapital * 100 : 0; // sul totale capitale
-    r.PnL = computePnL(r.Entry, r.Current, lev);
-    r.OpenEffWeight = r.OpenWeight * lev;
-  });
-
-  DATA.closed.forEach(r=>{
-    r.PortWeight = Number(r.Weight)||0;
-    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage||1);
-  });
-
-  return { openSum, closedWeightSum: clampClosed, totalCapital };
-}
+const computePnL = (entry, current, leverage = 1) => {
+  const e = Number(entry), c = Number(current);
+  if (!isFinite(e) || e === 0 || !isFinite(c)) return 0;
+  return ((c - e) / e) * 100 * (Number(leverage) || 1);
+};
 
 function buildDerived(){
-  const totals = computeWeightsAndPnL();
+  const openCapital = DATA.table.reduce((acc, r) => acc + (Number(r.Capital) || 0), 0);
+  const refCapital = openCapital || 1;
 
-  const unrealizedReturn = DATA.table.reduce((acc,r)=> acc + (Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100, 0);
-  const realizedReturn  = DATA.closed.reduce((acc,r)=> acc + (Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100, 0);
-  const totalReturn = unrealizedReturn + realizedReturn;
+  DATA.table.forEach(r => {
+    r.OpenWeight = openCapital > 0 ? (Number(r.Capital) || 0) / openCapital * 100 : 0;
+    r.PortWeight = r.OpenWeight;
+    r.PnL = computePnL(r.Entry, r.Current, r.Leverage || 1);
+    r.Contrib = refCapital > 0
+      ? ((Number(r.PnLEUR) || ((Number(r.Capital) || 0) * Number(r.PnL) / 100)) / refCapital) * 100
+      : 0;
+  });
 
-  let best=null, worst=null;
-  DATA.table.forEach(r=>{
-    if(!best || Number(r.PnL)>Number(best.PnL)) best=r;
-    if(!worst|| Number(r.PnL)<Number(worst.PnL)) worst=r;
+  DATA.closed.forEach(r => {
+    r.PnL = computePnL(r.Entry, r.Exit, r.Leverage || 1);
+    const capital = Number(r.Capital);
+    const explicitWeight = Number(r.Weight);
+    r.PortWeight = isFinite(explicitWeight) && explicitWeight > 0
+      ? explicitWeight
+      : (isFinite(capital) && refCapital > 0 ? (capital / refCapital) * 100 : 0);
+    r.Contrib = refCapital > 0
+      ? ((Number(r.PnLEUR) || (isFinite(capital) ? capital * Number(r.PnL) / 100 : 0)) / refCapital) * 100
+      : 0;
+  });
+
+  const realizedReturn = DATA.closed.reduce((acc, r) => acc + (Number(r.Contrib) || 0), 0);
+  const unrealizedReturn = DATA.table.reduce((acc, r) => acc + (Number(r.Contrib) || 0), 0);
+  const totalReturn = realizedReturn + unrealizedReturn;
+
+  let best = null, worst = null;
+  DATA.table.forEach(r => {
+    if (!best || Number(r.PnL) > Number(best.PnL)) best = r;
+    if (!worst || Number(r.PnL) < Number(worst.PnL)) worst = r;
   });
 
   const assetMap = new Map();
-  DATA.table.forEach(r=>{
-    const a = r.Asset ?? '';
-    assetMap.set(a, (assetMap.get(a)||0) + (Number(r.OpenEffWeight)||0));
+  DATA.table.forEach(r => {
+    const a = r.Asset || '';
+    assetMap.set(a, (assetMap.get(a) || 0) + (Number(r.OpenWeight) || 0));
   });
   const assetLabels = Array.from(assetMap.keys());
-  const assetWeights = assetLabels.map(a=> assetMap.get(a));
+  const assetWeights = assetLabels.map(a => assetMap.get(a));
 
-  const labels = DATA.table.map(r=>r.Ticker);
-  const openWeights = DATA.table.map(r=>Number(r.OpenWeight)||0);
-  const pnls = DATA.table.map(r=>Number(r.PnL)||0);
-
-  const scatterPoints = labels.map((t,i)=>({ x:openWeights[i], y:pnls[i], label:t }));
+  const labels = DATA.table.map(r => r.Ticker);
+  const openWeights = DATA.table.map(r => Number(r.OpenWeight) || 0);
+  const pnls = DATA.table.map(r => Number(r.PnL) || 0);
+  const scatterPoints = labels.map((t, i) => ({ x: openWeights[i], y: pnls[i], label: t }));
 
   const contrib = []
-    .concat(DATA.table.map(r=>({ label:r.Ticker, value:(Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100 })))
-    .concat(DATA.closed.map(r=>({ label:r.Ticker, value:(Number(r.PortWeight)||0)*(Number(r.PnL)||0)/100 })));
-  contrib.sort((a,b)=>b.value-a.value);
+    .concat(DATA.table.map(r => ({ label: r.Ticker, value: Number(r.Contrib) || 0 })))
+    .concat(DATA.closed.map(r => ({ label: r.Ticker, value: Number(r.Contrib) || 0 })))
+    .sort((a, b) => b.value - a.value);
 
-  return { totals, totalReturn, realizedReturn, labels, openWeights, pnls, best, worst, assetLabels, assetWeights, scatterPoints, contrib };
+  DATA.closed.sort((a, b) => (parseITDate(b.DataVendita) || 0) - (parseITDate(a.DataVendita) || 0));
+
+  return { openCapital, refCapital, totalReturn, realizedReturn, labels, openWeights, pnls, best, worst, assetLabels, assetWeights, scatterPoints, contrib };
 }
 
-/* =========================
-   4) RENDER
-   ========================= */
 function renderKPI(d){
   document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf || '—'}`;
-
   const totalEl = document.getElementById('kpiTotal');
-  totalEl.className = 'value ' + (d.totalReturn >= 0 ? 'pos':'neg');
-  totalEl.textContent = fmt(d.totalReturn) + '%';
-
+  totalEl.className = 'value ' + (d.totalReturn >= 0 ? 'pos' : 'neg');
+  totalEl.textContent = (d.totalReturn >= 0 ? '+' : '') + fmt(d.totalReturn) + '%';
   const realEl = document.getElementById('kpiRealized');
-  realEl.textContent = (d.realizedReturn>=0?'+':'') + fmt(d.realizedReturn) + '%';
-
+  realEl.textContent = (d.realizedReturn >= 0 ? '+' : '') + fmt(d.realizedReturn) + '%';
   document.getElementById('kpiBest').textContent = d.best?.Ticker ?? '—';
-  document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(Number(d.best?.PnL||0))}%</span>`;
-
+  document.getElementById('kpiBestHint').innerHTML = `P&L: <span class="pos">${fmt(Number(d.best?.PnL || 0))}%</span>`;
   document.getElementById('kpiWorst').textContent = d.worst?.Ticker ?? '—';
-  document.getElementById('kpiWorstHint').innerHTML = `P&L: <span class="neg">${fmt(Number(d.worst?.PnL||0))}%</span>`;
+  document.getElementById('kpiWorstHint').innerHTML = `P&L: <span class="neg">${fmt(Number(d.worst?.PnL || 0))}%</span>`;
 }
 
 const tbody = document.querySelector('#tbl tbody');
 const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
-let sortKey='OpenWeight';
-let sortDir='desc';
+let sortKey = 'OpenWeight';
+let sortDir = 'desc';
 
 function setIndicators(){
-  headers.forEach(th=>{
+  headers.forEach(th => {
     const ind = th.querySelector('.sort-ind');
-    if(!ind) return;
-    ind.textContent = (th.dataset.key===sortKey) ? (sortDir==='asc'?'▲':'▼') : '';
+    if (!ind) return;
+    ind.textContent = (th.dataset.key === sortKey) ? (sortDir === 'asc' ? '▲' : '▼') : '';
   });
 }
 
 function renderOpenTable(){
-  tbody.innerHTML='';
-  const sorted = DATA.table.slice().sort((a,b)=>{
+  tbody.innerHTML = '';
+  const sorted = DATA.table.slice().sort((a, b) => {
     const A = getComparable(a, sortKey);
     const B = getComparable(b, sortKey);
-    if (A<B) return sortDir==='asc'?-1:1;
-    if (A>B) return sortDir==='asc'?1:-1;
+    if (A < B) return sortDir === 'asc' ? -1 : 1;
+    if (A > B) return sortDir === 'asc' ? 1 : -1;
     return 0;
   });
 
-  sorted.forEach(r=>{
-    const tr=document.createElement('tr');
-    const pnlVal=Number(r.PnL)||0;
-    const pnlClass=pnlVal>=0?'pos':'neg';
-    const lev=Number(r.Leverage||1);
-
-    let weightHTML = `<span class="mono">${fmt(r.OpenWeight)}%</span>`;
-    weightHTML += `<span class="subval">Port: ${fmt(r.PortWeight)}%</span>`;
-    if(lev>1){
-      weightHTML += `<span class="exposure-val">Eff: <b>${fmt(r.OpenEffWeight)}%</b></span>`;
-    }
-
+  sorted.forEach(r => {
+    const tr = document.createElement('tr');
+    const pnlVal = Number(r.PnL) || 0;
+    const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
+    const weightHTML = `<span class="mono">${fmt(r.OpenWeight)}%</span><span class="subval">Cap: €${fmt(Number(r.Capital) || 0)}</span>`;
     tr.innerHTML =
-      `<td class="mono">${r.Ticker}</td>`+
-      `<td>${r.Name}</td>`+
-      `<td><span class="tag">${r.Asset}</span></td>`+
-      `<td class="mono">${r.DataAcquisto||''}</td>`+
-      `<td class="right mono">${weightHTML}</td>`+
-      `<td class="right mono">${fmtSmart(r.Entry)}</td>`+
-      `<td class="right mono">${fmtSmart(r.Current)}</td>`+
+      `<td class="mono">${r.Ticker}</td>` +
+      `<td>${r.Name}</td>` +
+      `<td><span class="tag">${r.Asset}</span></td>` +
+      `<td class="mono">${r.DataAcquisto || ''}</td>` +
+      `<td class="right mono">${weightHTML}</td>` +
+      `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
+      `<td class="right mono">${fmtSmart(r.Current)}</td>` +
       `<td class="right ${pnlClass}">${fmt(r.PnL)}%</td>`;
     tbody.appendChild(tr);
   });
-
   setIndicators();
 }
 
 function renderClosedTable(){
-  const tb=document.querySelector('#tblClosed tbody');
-  tb.innerHTML='';
-  DATA.closed.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.className='closed-row';
-    const pnl=Number(r.PnL||0);
-    const contrib = (Number(r.PortWeight||0) * pnl) / 100;
-
+  const tb = document.querySelector('#tblClosed tbody');
+  tb.innerHTML = '';
+  DATA.closed.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = 'closed-row';
+    const pnl = Number(r.PnL || 0);
     tr.innerHTML =
-      `<td class="mono">${r.Ticker}</td>`+
-      `<td>${r.Name}</td>`+
-      `<td><span class="tag">${r.Asset}</span></td>`+
-      `<td class="mono">${r.DataVendita||''}</td>`+
-      `<td class="right mono">${fmt(Number(r.PortWeight||0))}%</td>`+
-      `<td class="right mono">${fmtSmart(r.Entry)}</td>`+
-      `<td class="right mono">${fmtSmart(r.Exit)}</td>`+
-      `<td class="right ${pnl>=0?'pos':'neg'}">${fmt(pnl)}%</td>`+
-      `<td class="right realized">${contrib>=0?'+':''}${fmt(contrib)}%</td>`;
+      `<td class="mono">${r.Ticker}</td>` +
+      `<td>${r.Name}</td>` +
+      `<td><span class="tag">${r.Asset}</span></td>` +
+      `<td class="mono">${r.DataVendita || ''}</td>` +
+      `<td class="right mono">${fmt(Number(r.PortWeight || 0))}%</td>` +
+      `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
+      `<td class="right mono">${fmtSmart(r.Exit)}</td>` +
+      `<td class="right ${pnl >= 0 ? 'pos' : 'neg'}">${fmt(pnl)}%</td>` +
+      `<td class="right realized">${(Number(r.Contrib) || 0) >= 0 ? '+' : ''}${fmt(Number(r.Contrib) || 0)}%</td>`;
     tb.appendChild(tr);
   });
 }
 
-headers.forEach(th=>{
-  th.addEventListener('click', ()=>{
-    const key=th.dataset.key;
-    if(!key) return;
-    if(sortKey===key) sortDir = (sortDir==='asc') ? 'desc' : 'asc';
-    else{
-      sortKey=key;
-      sortDir = (key==='Name'||key==='Asset'||key==='Ticker'||key==='DataAcquisto') ? 'asc' : 'desc';
+headers.forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (!key) return;
+    if (sortKey === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+    else {
+      sortKey = key;
+      sortDir = (key === 'Name' || key === 'Asset' || key === 'Ticker' || key === 'DataAcquisto') ? 'asc' : 'desc';
     }
     renderOpenTable();
   });
 });
 
-/* =========================
-   5) CHARTS
-   ========================= */
 const common = {
   responsive:true,
   maintainAspectRatio:false,
@@ -456,7 +661,6 @@ const common = {
     y:{ ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
   }
 };
-
 const palette = ["#4E79A7","#F28E2B","#E15759","#76B7B2","#59A14F","#EDC948","#B07AA1","#FF9DA7","#9C755F","#BAB0AC","#1F77B4","#2CA02C"];
 let chartAlloc, chartAsset, chartScatter, chartContrib;
 
@@ -469,10 +673,10 @@ function initCharts(d){
 
   chartAsset = new Chart(document.getElementById('chartAsset'), {
     type:'bar',
-    data:{ labels:d.assetLabels, datasets:[{ label:'Esposizione %', data:d.assetWeights, borderWidth:0, backgroundColor:'#d0aaff' }] },
+    data:{ labels:d.assetLabels, datasets:[{ label:'Peso %', data:d.assetWeights, borderWidth:0, backgroundColor:'#d0aaff' }] },
     options:{
       ...common,
-      plugins:{ ...common.plugins, legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=>` Esposizione: ${fmt(c.parsed.y)}%` } } },
+      plugins:{ ...common.plugins, legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=>` Peso: ${fmt(c.parsed.y)}%` } } },
       scales:{
         x:{ ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
         y:{ ticks:{ color:'rgba(255,255,255,0.7)', callback:(v)=>v+'%' }, grid:{ color:'rgba(255,255,255,0.08)' } }
@@ -501,7 +705,7 @@ function initCharts(d){
       plugins:{ ...common.plugins, legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=>` ${fmt(c.parsed.y,2)} punti %` } } },
       scales:{
         x:{ ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } },
-        y:{ title:{ display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks:{ color:'rgba(255,255,255,0.7)' } , grid:{ color:'rgba(255,255,255,0.08)' } }
+        y:{ title:{ display:true, text:'Punti %', color:'rgba(255,255,255,0.78)' }, ticks:{ color:'rgba(255,255,255,0.7)' }, grid:{ color:'rgba(255,255,255,0.08)' } }
       }
     }
   });
@@ -510,15 +714,11 @@ function initCharts(d){
 function updateCharts(d){
   chartAlloc.data.labels = d.labels;
   chartAlloc.data.datasets[0].data = d.openWeights;
-
   chartAsset.data.labels = d.assetLabels;
   chartAsset.data.datasets[0].data = d.assetWeights;
-
   chartScatter.data.datasets[0].data = d.scatterPoints;
-
-  chartContrib.data.labels = d.contrib.map(x=>x.label);
-  chartContrib.data.datasets[0].data = d.contrib.map(x=>x.value);
-
+  chartContrib.data.labels = d.contrib.map(x => x.label);
+  chartContrib.data.datasets[0].data = d.contrib.map(x => x.value);
   chartAlloc.update(); chartAsset.update(); chartScatter.update(); chartContrib.update();
 }
 
@@ -527,7 +727,7 @@ function rebuildAll(){
   renderKPI(d);
   renderOpenTable();
   renderClosedTable();
-  if(!chartAlloc) initCharts(d); else updateCharts(d);
+  if (!chartAlloc) initCharts(d); else updateCharts(d);
 }
 
 rebuildAll();
