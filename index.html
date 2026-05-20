@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>P&L Singoli Investimenti</title>
+  <title>P&L</title>
   <style>
     :root{
       --bg:#0b1220;
@@ -131,12 +131,12 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>P&L Singoli Investimenti</h1>
+    <h1></h1>
     <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
   </header>
 
   <section class="card">
-    <h2>Investimenti acquistati - vendite ignorate</h2>
+    <h2></h2>
     <div class="table-wrap">
       <table class="table" id="tbl">
         <thead>
@@ -146,7 +146,7 @@
             <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
             <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
             <th class="right sortable" data-key="Entry">Entry<span class="sort-ind"></span></th>
-            <th class="right sortable" data-key="Current">Attuale stimato<span class="sort-ind"></span></th>
+            <th class="right sortable" data-key="Current">Attuale<span class="sort-ind"></span></th>
             <th class="right sortable" data-key="PnL">P&L da acquisto<span class="sort-ind"></span></th>
           </tr>
         </thead>
@@ -158,7 +158,7 @@
 
 <script>
 const DATA = {
-  asOf: "prezzi forniti dall'utente",
+  asOf: "05-20-2026",
 
   table: [
     { Ticker:"MIGA.SG", Name:"MicroStrategy", Asset:"Stock", DataAcquisto:"03/03/2026", Entry:113.77, Current:144.40 },
