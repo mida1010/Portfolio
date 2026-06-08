@@ -61,6 +61,16 @@
       color:var(--muted);
     }
 
+    .updated-badge{
+      padding:6px 12px;
+      border:1px solid var(--pos);
+      background:rgba(140,255,190,0.1);
+      border-radius:999px;
+      font-size:11px;
+      color:var(--pos);
+      font-weight:600;
+    }
+
     .card{
       background:linear-gradient(180deg,var(--card2),var(--card));
       border:1px solid var(--stroke);
@@ -132,7 +142,10 @@
 <div class="wrap">
   <header>
     <h1></h1>
-    <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
+      <div class="updated-badge">✓ Aggiornato oggi 08/06/2026</div>
+    </div>
   </header>
 
   <section class="card">
@@ -158,17 +171,17 @@
 
 <script>
 const DATA = {
-  asOf: "05-20-2026",
+  asOf: "06-08-2026",
 
   table: [
-    { Ticker:"SIDU", Name:"Sidus Space", Asset:"Stock", DataAcquisto:"31/12/2025", Entry:2.58, Current:6.20 },
-    { Ticker:"6RJ0.MU", Name:"Rocket Lab", Asset:"Stock", DataAcquisto:"16/12/2025", Entry:52.28, Current:129 },
-    { Ticker:"1810.HK", Name:"Xiaomi HK", Asset:"Stock", DataAcquisto:"02/12/2025", Entry:57.90, Current:28.4 },
-    { Ticker:"AHLA.DE", Name:"Alibaba", Asset:"Stock", DataAcquisto:"10/12/2025", Entry:134.49, Current:108.4 },
-    { Ticker:"EMAAR.AE", Name:"Emaar Properties", Asset:"Stock", DataAcquisto:"23/10/2025", Entry:13.90, Current:11.78 },
-    { Ticker:"ABEC.DE", Name:"Alphabet / Google", Asset:"Stock", DataAcquisto:"05/01/2026", Entry:271.88, Current:329.15 },
-    { Ticker:"TLO.DE", Name:"Tesla", Asset:"Stock", DataAcquisto:"10/12/2025", Entry:388.78, Current:381.28 },
-    { Ticker:"WNUC.DE", Name:"WisdomTree Uranium and Nuclear Energy UCITS ETF - USD Acc", Asset:"ETF", DataAcquisto:"12/12/2026", Entry:45.49, Current:51.28 }
+    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", DataAcquisto:"08/06/2026", Entry:12.12, Current:12.28 },
+    { Ticker:"SIDU", Name:"Sidus Space", Asset:"Stock", DataAcquisto:"31/12/2025", Entry:2.58, Current:4.0600 },
+    { Ticker:"6RJ0.MU", Name:"Rocket Lab", Asset:"Stock", DataAcquisto:"16/12/2025", Entry:52.28, Current:98.20 },
+    { Ticker:"1810.HK", Name:"Xiaomi HK", Asset:"Stock", DataAcquisto:"02/12/2025", Entry:57.90, Current:27.380 },
+    { Ticker:"AHLA.DE", Name:"Alibaba", Asset:"Stock", DataAcquisto:"10/12/2025", Entry:134.49, Current:105.20 },
+    { Ticker:"EMAAR.AE", Name:"Emaar Properties", Asset:"Stock", DataAcquisto:"23/10/2025", Entry:13.90, Current:11.24 },
+    { Ticker:"ABEC.DE", Name:"Alphabet / Google", Asset:"Stock", DataAcquisto:"05/01/2026", Entry:271.88, Current:311.90 },
+    { Ticker:"WNUC.DE", Name:"WisdomTree Uranium and Nuclear Energy UCITS ETF - USD Acc", Asset:"ETF", DataAcquisto:"12/12/2026", Entry:45.49, Current:47.91 }
   ]
 };
 
