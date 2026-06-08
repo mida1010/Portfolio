@@ -61,16 +61,6 @@
       color:var(--muted);
     }
 
-    .updated-badge{
-      padding:6px 12px;
-      border:1px solid var(--pos);
-      background:rgba(140,255,190,0.1);
-      border-radius:999px;
-      font-size:11px;
-      color:var(--pos);
-      font-weight:600;
-    }
-
     .card{
       background:linear-gradient(180deg,var(--card2),var(--card));
       border:1px solid var(--stroke);
@@ -142,10 +132,7 @@
 <div class="wrap">
   <header>
     <h1></h1>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
-      <div class="updated-badge">✓ Aggiornato oggi 08/06/2026</div>
-    </div>
+    <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
   </header>
 
   <section class="card">
@@ -171,7 +158,7 @@
 
 <script>
 const DATA = {
-  asOf: "06-08-2026",
+  asOf: "08-06-2026",
 
   table: [
     { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", DataAcquisto:"08/06/2026", Entry:12.12, Current:12.28 },
