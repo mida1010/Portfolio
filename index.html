@@ -145,6 +145,7 @@
             <th class="sortable" data-key="Name">Nome<span class="sort-ind"></span></th>
             <th class="sortable" data-key="Asset">Asset<span class="sort-ind"></span></th>
             <th class="sortable" data-key="DataAcquisto">Data Acq.<span class="sort-ind"></span></th>
+            <th class="right sortable" data-key="Shares">Quantità<span class="sort-ind"></span></th>
             <th class="right sortable" data-key="Entry">Entry<span class="sort-ind"></span></th>
             <th class="right sortable" data-key="Current">Attuale<span class="sort-ind"></span></th>
             <th class="right sortable" data-key="PnL">P&L da acquisto<span class="sort-ind"></span></th>
@@ -158,17 +159,15 @@
 
 <script>
 const DATA = {
-  asOf: "08-06-2026",
+  asOf: "13-08-2026",
 
   table: [
-    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", DataAcquisto:"08/06/2026", Entry:12.12, Current:12.28 },
-    { Ticker:"SIDU", Name:"Sidus Space", Asset:"Stock", DataAcquisto:"31/12/2025", Entry:2.58, Current:4.0600 },
-    { Ticker:"6RJ0.MU", Name:"Rocket Lab", Asset:"Stock", DataAcquisto:"16/12/2025", Entry:52.28, Current:98.20 },
-    { Ticker:"1810.HK", Name:"Xiaomi HK", Asset:"Stock", DataAcquisto:"02/12/2025", Entry:57.90, Current:27.380 },
-    { Ticker:"AHLA.DE", Name:"Alibaba", Asset:"Stock", DataAcquisto:"10/12/2025", Entry:134.49, Current:105.20 },
-    { Ticker:"EMAAR.AE", Name:"Emaar Properties", Asset:"Stock", DataAcquisto:"23/10/2025", Entry:13.90, Current:11.24 },
-    { Ticker:"ABEC.DE", Name:"Alphabet / Google", Asset:"Stock", DataAcquisto:"05/01/2026", Entry:271.88, Current:311.90 },
-    { Ticker:"WNUC.DE", Name:"WisdomTree Uranium and Nuclear Energy UCITS ETF - USD Acc", Asset:"ETF", DataAcquisto:"12/12/2026", Entry:45.49, Current:47.91 }
+    { Ticker:"SPOL.L", Name:"iShares MSCI Poland UCITS ETF USD (Acc)", Asset:"ETF", DataAcquisto:"", Shares:30.67, Entry:2771.00, Current:3116.72, PnL:12.09 },
+    { Ticker:"BZ=F", Name:"Brent Crude Oil Last Day Financial Futures", Asset:"Futures", DataAcquisto:"", Shares:-53.5, Entry:90.20, Current:87.80, PnL:2.55 },
+    { Ticker:"HYPE32196-USD", Name:"Hyperliquid USD", Asset:"Crypto", DataAcquisto:"", Shares:62.93, Entry:56.04, Current:57.31, PnL:2.38 },
+    { Ticker:"1810.HK", Name:"Xiaomi Corporation", Asset:"Stock", DataAcquisto:"02/12/2025", Shares:348.75, Entry:25.400, Current:25.900, PnL:0.762 },
+    { Ticker:"GSIT", Name:"GSI Technology, Inc.", Asset:"Stock", DataAcquisto:"", Shares:165.86, Entry:6.82, Current:6.64, PnL:-3.72 },
+    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", DataAcquisto:"08/06/2026", Shares:140, Entry:12.10, Current:8.87, PnL:-27.31 }
   ]
 };
 
@@ -221,12 +220,13 @@ const computePnL = (entry, current) => {
 const getComparable = (row, key) => {
   const v = row[key];
   if (key === 'DataAcquisto') return parseITDate(v) ?? -Infinity;
-  if (['Entry','Current','PnL'].includes(key)) return Number(v) || 0;
+  if (['Shares','Entry','Current','PnL'].includes(key)) return Number(v) || 0;
   return (v ?? '').toString().toLowerCase();
 };
 
 DATA.table.forEach(r => {
-  r.PnL = computePnL(r.Entry, r.Current);
+  const providedPnL = Number(r.PnL);
+  r.PnL = Number.isFinite(providedPnL) ? providedPnL : computePnL(r.Entry, r.Current);
 });
 
 document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf}`;
@@ -266,6 +266,7 @@ function renderTable() {
       `<td>${r.Name}</td>` +
       `<td>${r.Asset}</td>` +
       `<td class="mono">${r.DataAcquisto || ''}</td>` +
+      `<td class="right mono">${fmtSmart(r.Shares)}</td>` +
       `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
       `<td class="right mono">${fmtSmart(r.Current)}</td>` +
       `<td class="right ${pnlClass}">${fmtPct(r.PnL)}</td>`;
