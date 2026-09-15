@@ -19,9 +19,7 @@
       --pos:#8cffbe;
       --neg:#ff8c8c;
     }
-
     *{box-sizing:border-box}
-
     body{
       margin:0;
       font-family:var(--sans);
@@ -31,109 +29,30 @@
         radial-gradient(900px 700px at 90% 30%, rgba(180,120,255,0.14), transparent 60%),
         var(--bg);
     }
-
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:22px 18px 48px;
-    }
-
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    h1{
-      margin:0;
-      font-size:22px;
-      letter-spacing:.2px;
-    }
-
-    .pill{
-      padding:8px 12px;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,0.04);
-      border-radius:999px;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .card{
-      background:linear-gradient(180deg,var(--card2),var(--card));
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
-    }
-
-    .closed-section{
-      margin-top:18px;
-    }
-
-    .card h2{
-      margin:0 0 10px;
-      font-size:14px;
-      color:rgba(255,255,255,0.86);
-      font-weight:650;
-      letter-spacing:.2px;
-    }
-
-    .table-wrap{
-      max-height:620px;
-      overflow:auto;
-      border-radius:14px;
-      border:1px solid var(--stroke);
-    }
-
-    .table{
-      width:100%;
-      border-collapse:collapse;
-      border:0;
-    }
-
-    .table thead th{
-      text-align:left;
-      font-size:12px;
-      color:var(--muted);
-      padding:10px;
-      border-bottom:1px solid var(--stroke);
-      background:rgba(255,255,255,0.04);
-      position:sticky;
-      top:0;
-      z-index:1;
-      white-space:nowrap;
-    }
-
-    .table tbody td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,0.06);
-      font-size:13px;
-      white-space:nowrap;
-    }
-
+    .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 48px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .pill{padding:8px 12px;border:1px solid var(--stroke);background:rgba(255,255,255,0.04);border-radius:999px;font-size:12px;color:var(--muted)}
+    .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+    .closed-section{margin-top:18px}
+    .card h2{margin:0 0 10px;font-size:14px;color:rgba(255,255,255,0.86);font-weight:650;letter-spacing:.2px}
+    .table-wrap{max-height:620px;overflow:auto;border-radius:14px;border:1px solid var(--stroke)}
+    .table{width:100%;border-collapse:collapse;border:0}
+    .table thead th{text-align:left;font-size:12px;color:var(--muted);padding:10px;border-bottom:1px solid var(--stroke);background:rgba(255,255,255,0.04);position:sticky;top:0;z-index:1;white-space:nowrap}
+    .table tbody td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;white-space:nowrap}
     .table tbody tr:hover{background:rgba(255,255,255,0.04)}
-
     .right{text-align:right}
     .pos{color:var(--pos);font-family:var(--mono)}
     .neg{color:var(--neg);font-family:var(--mono)}
     .mono{font-family:var(--mono)}
     .tx-link{color:var(--text);text-decoration:none}
     .tx-link:hover{text-decoration:underline}
-
     .table thead th.sortable{cursor:pointer;user-select:none}
     .table thead th.sortable:hover{background:rgba(255,255,255,0.06)}
     .sort-ind{opacity:.7;margin-left:6px;font-size:11px}
-
-    @media (max-width:720px){
-      header{align-items:flex-start;flex-direction:column}
-      .wrap{padding:18px 12px 36px}
-    }
+    @media (max-width:720px){header{align-items:flex-start;flex-direction:column}.wrap{padding:18px 12px 36px}}
   </style>
 </head>
-
 <body>
 <div class="wrap">
   <header>
@@ -230,128 +149,43 @@
 <script>
 const DATA = {
   asOf: "15-09-2026",
-
   table: [
-    { Ticker:"GOLD", Name:"Gold", Asset:"Futures", Direction:"Long", Opened:"15/09/2026 19:23:04", Entry:4295.1, Current:4295.1, PnL:0.00, Quantity:0.7820, NotionalUSDC:3358.77, OpenFeeUSDC:2.90, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xcb6d5a35804a3858cce7044478725b020175001b1b4d572a6f3605883f4e1243" },
-    { Ticker:"XYZ100", Name:"XYZ100", Asset:"Futures", Direction:"Short", Opened:"15/09/2026 19:15:29", Entry:28946, Current:28946, PnL:0.00, Quantity:0.7000, NotionalUSDC:20262.20, OpenFeeUSDC:1.75, Tx:"https://app.hyperliquid.xyz/explorer/tx/0x8e359e234638952b8faf044478594801cb00b608e13bb3fd31fe4976053c6f16" },
-    { Ticker:"SPOL.L", Name:"iShares MSCI Poland UCITS ETF USD (Acc)", Asset:"ETF", Entry:2771.00, Current:3214.50, PnL:15.15 },
-    { Ticker:"SPCX", Name:"Space Exploration Technologies Corp.", Asset:"Stock", Entry:136.23, Current:148.18, PnL:8.11 },
-    { Ticker:"1810.HK", Name:"Xiaomi Corporation", Asset:"Stock", Entry:25.400, Current:26.360, PnL:1.949 },
-    { Ticker:"BZ=F", Name:"Brent Crude Oil Last Day Financial Futures", Asset:"Futures", Direction:"Short", Opened:"10/09/2026 18:02:28", Entry:108.00, Current:104.42, PnL:3.3148, Quantity:15.00, NotionalUSDC:1559.55, OpenFeeUSDC:1.69, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc0078bf57cc122ddc18104441bd66702034100db17c441af63d037483bc4fcc8" },
-    { Ticker:"GSIT", Name:"GSI Technology, Inc.", Asset:"Stock", Entry:6.82, Current:5.31, PnL:-23.50 },
-    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", Entry:12.10, Current:7.60, PnL:-38.12 }
+    { Ticker:"GOLD", Name:"Gold", Asset:"Futures", Direction:"Long", Opened:"15/09/2026 19:23:04", Entry:4295.1, Current:4336.5, PnL:0.9639, Quantity:0.7820, NotionalUSDC:3358.77, OpenFeeUSDC:2.90, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xcb6d5a35804a3858cce7044478725b020175001b1b4d572a6f3605883f4e1243" },
+    { Ticker:"XYZ100", Name:"XYZ100", Asset:"Futures", Direction:"Short", Opened:"15/09/2026 19:15:29", Entry:28946, Current:29261.5, PnL:-1.0900, Quantity:0.7000, NotionalUSDC:20262.20, OpenFeeUSDC:1.75, Tx:"https://app.hyperliquid.xyz/explorer/tx/0x8e359e234638952b8faf044478594801cb00b608e13bb3fd31fe4976053c6f16" },
+    { Ticker:"SPOL.L", Name:"iShares MSCI Poland UCITS ETF USD (Acc)", Asset:"ETF", Entry:2771.00, Current:3177.00, PnL:14.6518 },
+    { Ticker:"SPCX", Name:"Space Exploration Technologies Corp.", Asset:"Stock", Entry:136.23, Current:143.79, PnL:5.5494 },
+    { Ticker:"1810.HK", Name:"Xiaomi Corporation", Asset:"Stock", Entry:25.400, Current:26.500, PnL:4.3307 },
+    { Ticker:"BZ=F", Name:"Brent Crude Oil Last Day Financial Futures", Asset:"Futures", Direction:"Short", Opened:"10/09/2026 18:02:28", Entry:108.00, Current:109.18, PnL:-1.0926, Quantity:15.00, NotionalUSDC:1559.55, OpenFeeUSDC:1.69, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc0078bf57cc122ddc18104441bd66702034100db17c441af63d037483bc4fcc8" },
+    { Ticker:"GSIT", Name:"GSI Technology, Inc.", Asset:"Stock", Entry:6.82, Current:4.9421, PnL:-27.5352 },
+    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", Entry:12.10, Current:7.24, PnL:-40.1653 }
   ]
 };
 
-const fmt = (x, d=2) => Number(x).toLocaleString('it-IT', {
-  minimumFractionDigits:d,
-  maximumFractionDigits:d
-});
-
-const fmtPct = (x) => {
-  const n = Number(x);
-  if (!isFinite(n)) return "-";
-  return `${n >= 0 ? '+' : ''}${fmt(n)}%`;
-};
-
+const fmt = (x, d=2) => Number(x).toLocaleString('it-IT', {minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtPct = (x) => { const n=Number(x); if(!isFinite(n)) return "-"; return `${n>=0?'+':''}${fmt(n)}%`; };
 const fmtSmart = (x) => {
-  const n = Number(x);
-  if (!isFinite(n)) return "-";
-  const a = Math.abs(n);
-
-  if (a !== 0 && a < 1) {
-    return n.toLocaleString('it-IT', {
-      minimumFractionDigits:3,
-      maximumFractionDigits:6
-    });
-  }
-
-  return n.toLocaleString('it-IT', {
-    minimumFractionDigits:0,
-    maximumFractionDigits:3
-  });
+  const n=Number(x); if(!isFinite(n)) return "-"; const a=Math.abs(n);
+  if(a!==0 && a<1) return n.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:6});
+  return n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:3});
 };
-
-const computePnL = (entry, current) => {
-  const e = Number(entry);
-  const c = Number(current);
-  if (!isFinite(e) || e === 0 || !isFinite(c)) return null;
-  return ((c - e) / e) * 100;
+const computePnL = (entry,current,direction) => {
+  const e=Number(entry), c=Number(current); if(!isFinite(e)||e===0||!isFinite(c)) return null;
+  return direction === 'Short' ? ((e-c)/e)*100 : ((c-e)/e)*100;
 };
-
-const getComparable = (row, key) => {
-  const v = row[key];
-  if (['Entry','Current','PnL'].includes(key)) return Number(v) || 0;
-  return (v ?? '').toString().toLowerCase();
-};
-
-DATA.table.forEach(r => {
-  const providedPnL = Number(r.PnL);
-  r.PnL = Number.isFinite(providedPnL) ? providedPnL : computePnL(r.Entry, r.Current);
-});
-
-document.getElementById('asOf').textContent = `Prezzi aggiornati al: ${DATA.asOf}`;
-
-const tbody = document.querySelector('#tbl tbody');
-const headers = Array.from(document.querySelectorAll('#tbl thead th.sortable'));
-
-let sortKey = 'PnL';
-let sortDir = 'desc';
-
-function setIndicators() {
-  headers.forEach(th => {
-    const ind = th.querySelector('.sort-ind');
-    if (!ind) return;
-    ind.textContent = th.dataset.key === sortKey ? sortDir === 'asc' ? '▲' : '▼' : '';
-  });
-}
-
-function renderTable() {
-  tbody.innerHTML = '';
-
-  const sorted = DATA.table.slice().sort((a,b) => {
-    const A = getComparable(a, sortKey);
-    const B = getComparable(b, sortKey);
-    if (A < B) return sortDir === 'asc' ? -1 : 1;
-    if (A > B) return sortDir === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  sorted.forEach(r => {
-    const tr = document.createElement('tr');
-    const pnlVal = Number(r.PnL) || 0;
-    const pnlClass = pnlVal >= 0 ? 'pos' : 'neg';
-
-    tr.innerHTML =
-      `<td class="mono">${r.Ticker}</td>` +
-      `<td>${r.Name}</td>` +
-      `<td>${r.Asset}</td>` +
-      `<td class="right mono">${fmtSmart(r.Entry)}</td>` +
-      `<td class="right mono">${fmtSmart(r.Current)}</td>` +
-      `<td class="right ${pnlClass}">${fmtPct(r.PnL)}</td>`;
-
-    tbody.appendChild(tr);
-  });
-
+const getComparable=(row,key)=>{const v=row[key];if(['Entry','Current','PnL'].includes(key))return Number(v)||0;return(v??'').toString().toLowerCase();};
+DATA.table.forEach(r=>{const providedPnL=Number(r.PnL);r.PnL=Number.isFinite(providedPnL)?providedPnL:computePnL(r.Entry,r.Current,r.Direction);});
+document.getElementById('asOf').textContent=`Prezzi aggiornati al: ${DATA.asOf}`;
+const tbody=document.querySelector('#tbl tbody');
+const headers=Array.from(document.querySelectorAll('#tbl thead th.sortable'));
+let sortKey='PnL'; let sortDir='desc';
+function setIndicators(){headers.forEach(th=>{const ind=th.querySelector('.sort-ind');if(!ind)return;ind.textContent=th.dataset.key===sortKey?(sortDir==='asc'?'▲':'▼'):'';});}
+function renderTable(){
+  tbody.innerHTML='';
+  const sorted=DATA.table.slice().sort((a,b)=>{const A=getComparable(a,sortKey),B=getComparable(b,sortKey);if(A<B)return sortDir==='asc'?-1:1;if(A>B)return sortDir==='asc'?1:-1;return 0;});
+  sorted.forEach(r=>{const tr=document.createElement('tr');const pnlVal=Number(r.PnL)||0;const pnlClass=pnlVal>=0?'pos':'neg';tr.innerHTML=`<td class="mono">${r.Ticker}</td><td>${r.Name}</td><td>${r.Asset}</td><td class="right mono">${fmtSmart(r.Entry)}</td><td class="right mono">${fmtSmart(r.Current)}</td><td class="right ${pnlClass}">${fmtPct(r.PnL)}</td>`;tbody.appendChild(tr);});
   setIndicators();
 }
-
-headers.forEach(th => {
-  th.addEventListener('click', () => {
-    const key = th.dataset.key;
-    if (!key) return;
-
-    if (sortKey === key) {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortKey = key;
-      sortDir = ['Name','Ticker','Asset'].includes(key) ? 'asc' : 'desc';
-    }
-
-    renderTable();
-  });
-});
-
+headers.forEach(th=>{th.addEventListener('click',()=>{const key=th.dataset.key;if(!key)return;if(sortKey===key){sortDir=sortDir==='asc'?'desc':'asc';}else{sortKey=key;sortDir=['Name','Ticker','Asset'].includes(key)?'asc':'desc';}renderTable();});});
 renderTable();
 </script>
 </body>
