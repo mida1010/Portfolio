@@ -33,7 +33,6 @@
     header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
     h1{margin:0;font-size:22px;letter-spacing:.2px}
     .pill{padding:8px 12px;border:1px solid var(--stroke);background:rgba(255,255,255,0.04);border-radius:999px;font-size:12px;color:var(--muted)}
-    .header-metrics{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
     .closed-section{margin-top:18px}
     .card h2{margin:0 0 10px;font-size:14px;color:rgba(255,255,255,0.86);font-weight:650;letter-spacing:.2px}
@@ -58,10 +57,7 @@
 <div class="wrap">
   <header>
     <h1>Portafoglio iniziato il 20/06/26</h1>
-    <div class="header-metrics">
-      <div class="pill" id="totalReturn">Total return (geometric avg): -</div>
-      <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
-    </div>
+    <div class="pill" id="asOf">Prezzi aggiornati al: -</div>
   </header>
 
   <section class="card">
@@ -179,11 +175,6 @@ const computePnL = (entry,current,direction) => {
 };
 const getComparable=(row,key)=>{const v=row[key];if(['Entry','Current','PnL'].includes(key))return Number(v)||0;return(v??'').toString().toLowerCase();};
 DATA.table.forEach(r=>{const providedPnL=Number(r.PnL);r.PnL=Number.isFinite(providedPnL)?providedPnL:computePnL(r.Entry,r.Current,r.Direction);});
-const geometricAverageReturn=(rows)=>{const factors=rows.map(r=>1+(Number(r.PnL)/100)).filter(x=>Number.isFinite(x)&&x>0);if(!factors.length)return null;return (Math.pow(factors.reduce((a,b)=>a*b,1),1/factors.length)-1)*100;};
-const totalReturn=geometricAverageReturn(DATA.table);
-const totalReturnEl=document.getElementById('totalReturn');
-totalReturnEl.textContent=`Total return (geometric avg): ${fmtPct(totalReturn)}`;
-totalReturnEl.classList.add(totalReturn>=0?'pos':'neg');
 document.getElementById('asOf').textContent=`Prezzi aggiornati al: ${DATA.asOf}`;
 const tbody=document.querySelector('#tbl tbody');
 const headers=Array.from(document.querySelectorAll('#tbl thead th.sortable'));
