@@ -96,6 +96,15 @@
         </thead>
         <tbody>
           <tr>
+            <td class="mono">XYZ100</td>
+            <td>Short</td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0x8e359e234638952b8faf044478594801cb00b608e13bb3fd31fe4976053c6f16" target="_blank" rel="noopener noreferrer">15/09/2026</a></td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0x1f68595e704fdec820e20444e68fb40211f800440b42fd9ac33104b12f43b8b2" target="_blank" rel="noopener noreferrer">21/09/2026</a></td>
+            <td class="right mono">28.946</td>
+            <td class="right mono">30.393</td>
+            <td class="right neg" title="P&L realizzato: -1.016,14 USDC; fee chiusura: 1,84 USDC">-5,00%</td>
+          </tr>
+          <tr>
             <td class="mono">SPCX</td>
             <td>Short</td>
             <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0x617bf7109e16321562f5043dedf3ca0214ef00f6391950e70544a2635d1a0c00" target="_blank" rel="noopener noreferrer">17/06/2026</a></td>
@@ -107,11 +116,11 @@
           <tr>
             <td class="mono">CL=F</td>
             <td>Short</td>
-            <td class="mono">14/08/2026</td>
-            <td class="mono">02/09/2026</td>
-            <td class="right mono">80,20</td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0x348ad001ad07cc7c36040442282ab90203cb00e7480aeb4ed8537b546c0ba666" target="_blank" rel="noopener noreferrer">14/08/2026</a></td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0xef31cdb698425a56f0ab04438243ac0202a0009c3345792892fa790957463441" target="_blank" rel="noopener noreferrer">02/09/2026</a></td>
+            <td class="right mono">80,818</td>
             <td class="right mono">90,007</td>
-            <td class="right neg">-12,23%</td>
+            <td class="right neg" title="P&L realizzato: -122,72 USDC; fee chiusura: 0,10 USDC">-11,37%</td>
           </tr>
           <tr>
             <td class="mono">BZ=F</td>
@@ -125,11 +134,11 @@
           <tr>
             <td class="mono">GRAM-USD</td>
             <td>Long</td>
-            <td class="mono">-</td>
-            <td class="mono">15/09/2026</td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0x696cec8c8286a9736ae60443824db102020b00721d89c8450d3597df418a835e" target="_blank" rel="noopener noreferrer">02/09/2026</a></td>
+            <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0xc04ef4c6791f4de5c1c80444781a7902027400ac14126cb76417a019381327d0" target="_blank" rel="noopener noreferrer">15/09/2026</a></td>
             <td class="right mono">1,3224</td>
             <td class="right mono">1,3310</td>
-            <td class="right pos">+0,65%</td>
+            <td class="right pos" title="P&L realizzato: +12,65 USDC; fee chiusura: 0,90 USDC">+0,65%</td>
           </tr>
           <tr>
             <td class="mono">HYPE32196-USD</td>
@@ -138,7 +147,7 @@
             <td><a class="tx-link mono" href="https://app.hyperliquid.xyz/explorer/tx/0xf6fbb3a8037d04f8f87504447823730201a8008d9e7023cb9ac45efac270dee3" target="_blank" rel="noopener noreferrer">15/09/2026</a></td>
             <td class="right mono">56,04</td>
             <td class="right mono">76,822</td>
-            <td class="right pos">+37,08%</td>
+            <td class="right pos" title="P&L realizzato: +1.305,58 USDC; fee chiusura: 2,09 USDC">+37,08%</td>
           </tr>
         </tbody>
       </table>
@@ -148,17 +157,16 @@
 
 <script>
 const DATA = {
-  asOf: "18-09-2026",
+  asOf: "22-09-2026",
   table: [
-    { Ticker:"HYPE32196-USD", Name:"Hyperliquid USD", Asset:"Crypto", Direction:"Long", Opened:"16/09/2026 13:29:59", Entry:79.237, Current:88.47, PnL:11.6524, Quantity:71.23, NotionalUSDC:5644.05, OpenFeeUSDC:8.08, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc5f950ffe3d06dadc77304448659c302040e00e57ed38c7f69c1fc52a2d44798" },
-    { Ticker:"GOLD", Name:"Gold", Asset:"Futures", Direction:"Long", Opened:"15/09/2026 19:23:04", Entry:4295.1, Current:4429.70, PnL:3.1338, Quantity:0.7820, NotionalUSDC:3358.77, OpenFeeUSDC:2.90, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xcb6d5a35804a3858cce7044478725b020175001b1b4d572a6f3605883f4e1243" },
-    { Ticker:"XYZ100", Name:"XYZ100", Asset:"Futures", Direction:"Short", Opened:"15/09/2026 19:15:29", Entry:28946, Current:29909.50, PnL:-3.3286, Quantity:0.7000, NotionalUSDC:20262.20, OpenFeeUSDC:1.75, Tx:"https://app.hyperliquid.xyz/explorer/tx/0x8e359e234638952b8faf044478594801cb00b608e13bb3fd31fe4976053c6f16" },
-    { Ticker:"SPOL.L", Name:"iShares MSCI Poland UCITS ETF USD (Acc)", Asset:"ETF", Entry:2771.00, Current:3186.50, PnL:14.9946 },
-    { Ticker:"SPCX", Name:"Space Exploration Technologies Corp.", Asset:"Stock", Entry:136.23, Current:154.81, PnL:13.6387 },
-    { Ticker:"1810.HK", Name:"Xiaomi Corporation", Asset:"Stock", Entry:25.400, Current:26.400, PnL:3.9370 },
-    { Ticker:"BZ=F", Name:"Brent Crude Oil Last Day Financial Futures", Asset:"Futures", Direction:"Short", Opened:"10/09/2026 18:02:28", Entry:103.97, Current:98.49, PnL:5.2708, Quantity:15.00, NotionalUSDC:1559.55, OpenFeeUSDC:1.69, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc0078bf57cc122ddc18104441bd66702034100db17c441af63d037483bc4fcc8" },
-    { Ticker:"GSIT", Name:"GSI Technology, Inc.", Asset:"Stock", Entry:6.82, Current:5.22, PnL:-23.4604 },
-    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", Entry:12.10, Current:7.51, PnL:-37.9339 }
+    { Ticker:"HYPE32196-USD", Name:"Hyperliquid USD", Asset:"Crypto", Direction:"Long", Opened:"16/09/2026 13:29:59", Entry:79.237, Current:95.03, Quantity:71.23, NotionalUSDC:5644.05, OpenFeeUSDC:8.08, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc5f950ffe3d06dadc77304448659c302040e00e57ed38c7f69c1fc52a2d44798" },
+    { Ticker:"GOLD", Name:"Gold", Asset:"Futures", Direction:"Long", Opened:"15/09/2026 19:23:04", Entry:4295.1, Current:4364.90, Quantity:0.7820, NotionalUSDC:3358.77, OpenFeeUSDC:2.90, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xcb6d5a35804a3858cce7044478725b020175001b1b4d572a6f3605883f4e1243" },
+    { Ticker:"SPOL.L", Name:"iShares MSCI Poland UCITS ETF USD (Acc)", Asset:"ETF", Entry:2771.00, Current:3245.50 },
+    { Ticker:"SPCX", Name:"Space Exploration Technologies Corp.", Asset:"Stock", Entry:136.23, Current:151.85 },
+    { Ticker:"1810.HK", Name:"Xiaomi Corporation", Asset:"Stock", Entry:25.400, Current:27.200 },
+    { Ticker:"BZ=F", Name:"Brent Crude Oil Last Day Financial Futures", Asset:"Futures", Direction:"Short", Opened:"10/09/2026 18:02:28", Entry:103.97, Current:99.30, Quantity:15.00, NotionalUSDC:1559.55, OpenFeeUSDC:1.69, Tx:"https://app.hyperliquid.xyz/explorer/tx/0xc0078bf57cc122ddc18104441bd66702034100db17c441af63d037483bc4fcc8" },
+    { Ticker:"GSIT", Name:"GSI Technology, Inc.", Asset:"Stock", Entry:6.82, Current:5.57 },
+    { Ticker:"POET", Name:"POET Technologies Inc.", Asset:"Stock", Entry:12.10, Current:8.41 }
   ]
 };
 
