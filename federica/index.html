@@ -44,13 +44,13 @@ button{font:inherit;cursor:pointer}
 <span class="label">Una sorpresa speciale</span>
 <h1>Ciao, Federica!</h1>
 <span class="heart-big" aria-hidden="true">💖</span>
-<p>Ho preparato un piccolo gioco per te. Trova le tre coppie nascoste e scopri il messaggio segreto.</p>
+<p>Ho preparato un memory di tre livelli. Trova tutte le coppie senza sbagliare!</p>
 <button class="primary" id="start">Cominciamo ✨</button>
 </section>
 <section class="card hidden" id="game">
-<span class="label">Il piccolo gioco</span>
+<span class="label"><span id="level-info">Livello 1 di 3</span></span>
 <h1>Trova le coppie</h1>
-<p>Gira le carte e abbina i simboli uguali. Sono solo tre coppie!</p>
+<p>Abbina le carte uguali. Se sbagli, tutte le carte tornano coperte e riparti da zero nel livello.</p>
 <div class="board" id="board" aria-label="Gioco di memoria con sei carte"></div>
 <div class="status" id="status" aria-live="polite">Coppie trovate: 0 di 3</div>
 <div class="hint">Tocca due carte per scoprirle 💌</div>
@@ -59,7 +59,7 @@ button{font:inherit;cursor:pointer}
 <span class="label">Solo per te</span>
 <div class="wreath" aria-hidden="true">✨ 💐 ✨</div>
 <h1>Federica,<br>sei bellissima!</h1>
-<p class="final-line">Un piccolo messaggio per ricordarti quanto sei speciale. 💗</p>
+<p class="final-line">Un piccolo messaggio per ricordarti quanto sei stupenda. 💗</p>
 <div class="hearts" aria-hidden="true">💕 💖 💕</div>
 <button class="primary" id="again">Rigioca 💌</button>
 </section>
@@ -68,36 +68,41 @@ button{font:inherit;cursor:pointer}
 'use strict';
 const $=id=>document.getElementById(id);
 const views=['welcome','game','result'];
-let first=null,second=null,lock=false,matches=0;
-function show(id){views.forEach(view=>$(view).classList.toggle('hidden',view!==id));}
-function start(){
- first=null;second=null;lock=false;matches=0;
- $('status').textContent='Coppie trovate: 0 di 3';
- const cards=['💖','🌷','✨','💖','🌷','✨'];
+
+const symbols=['💖','🌷','✨','🦋'];
+const counts=[2,3,4];
+let level=0,first=null,locked=false,matches=0,round=0;
+function show(id){views.forEach(name=>$(name).classList.toggle('hidden',name!==id));}
+function start(){level=0;show('game');newRound();}
+function newRound(){
+ round++;const n=counts[level];first=null;locked=false;matches=0;
+ $('level-info').textContent='Livello '+(level+1)+' di 3';
+ $('status').textContent='Coppie trovate: 0 di '+n;
+ const cards=symbols.slice(0,n).flatMap(x=>[x,x]);
  for(let i=cards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cards[i],cards[j]]=[cards[j],cards[i]];}
  $('board').replaceChildren();
- cards.forEach((symbol,index)=>{
-  const button=document.createElement('button');button.type='button';button.className='tile';button.setAttribute('aria-label','Carta '+(index+1)+', coperta');
-  const face=document.createElement('span');face.className='face';face.textContent=symbol;face.setAttribute('aria-hidden','true');
-  button.append(face);button.addEventListener('click',()=>flip(button,symbol));$('board').append(button);
- });
- show('game');
+ for(const [i,symbol] of cards.entries()){
+  const b=document.createElement('button');b.type='button';b.className='tile';b.dataset.symbol=symbol;
+  b.setAttribute('aria-label','Carta '+(i+1)+', coperta');
+  const face=document.createElement('span');face.className='face';face.textContent=symbol;face.setAttribute('aria-hidden','true');b.append(face);
+  const token=round;b.addEventListener('click',()=>flip(b,token));$('board').append(b);
+ }
 }
-function flip(button,symbol){
- if(lock||button===first||button.classList.contains('matched'))return;
- button.classList.add('revealed');button.setAttribute('aria-label','Carta scoperta: '+symbol);
- if(!first){first=button;return;}
- second=button;lock=true;
- if(first.querySelector('.face').textContent===symbol){
-  first.classList.add('matched');second.classList.add('matched');first.disabled=true;second.disabled=true;
-  matches++;$('status').textContent='Coppie trovate: '+matches+' di 3';
-  first=null;second=null;lock=false;
-  if(matches===3){setTimeout(()=>{show('result');celebrate();},650);}
+function flip(card,token){
+ if(locked||token!==round||card===first||card.classList.contains('matched'))return;
+ card.classList.add('revealed');card.setAttribute('aria-label','Carta scoperta: '+card.dataset.symbol);
+ if(!first){first=card;return;}
+ const previous=first;first=null;locked=true;
+ if(previous.dataset.symbol===card.dataset.symbol){
+  [previous,card].forEach(b=>{b.classList.add('matched');b.disabled=true;});
+  matches++;$('status').textContent='Coppie trovate: '+matches+' di '+counts[level];
+  if(matches===counts[level]){
+   $('status').textContent='Livello completato! 💖';
+   setTimeout(()=>{if(token!==round)return;if(level===2){show('result');celebrate();}else{level++;newRound();}},800);
+  }else{locked=false;}
  }else{
-  setTimeout(()=>{
-   [first,second].forEach(card=>{card.classList.remove('revealed');card.setAttribute('aria-label','Carta coperta');});
-   first=null;second=null;lock=false;
-  },750);
+  $('status').textContent='Hai sbagliato! Si ricomincia il livello 💗';
+  setTimeout(()=>{if(token===round)newRound();},1000);
  }
 }
 function celebrate(){
